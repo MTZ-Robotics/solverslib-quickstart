@@ -41,7 +41,7 @@ public class LimeLightSample extends LinearOpMode {
                     telemetry.addData("Botpose", botpose.toString());
                 }
             }
-            //The code below is for improving 
+           /* //The code below is for improving
             YawPitchRollAngles orientation = imu.getRobotYawPitchRollAngles();
             limelight.updateRobotOrientation(orientation.getYaw(AngleUnit.DEGREES));
             LLResult result = limelight.getLatestResult();
@@ -49,8 +49,8 @@ public class LimeLightSample extends LinearOpMode {
                 if (result.isValid()) {
                     Pose3D botpose = result.getBotpose_MT2();
                     // Use botpose data
-                }
+                }*/
             }
         }
     }
-}
+

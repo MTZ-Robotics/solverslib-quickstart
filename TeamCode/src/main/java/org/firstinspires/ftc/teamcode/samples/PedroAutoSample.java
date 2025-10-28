@@ -19,14 +19,22 @@ import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 public class PedroAutoSample extends CommandOpMode {
     private Follower follower;
     TelemetryData telemetryData = new TelemetryData(telemetry);
+    double pickupX = 60;
+    double pickup1Y = 84;
+    double pickup2Y = 60;
+    double pickup3Y = 36;
+    double pickupLength = 38;
 
     // Poses
-    private final Pose startPose = new Pose(9, 111, Math.toRadians(-90));
-    private final Pose scorePose = new Pose(16, 128, Math.toRadians(-45));
-    private final Pose pickup1Pose = new Pose(30, 121, Math.toRadians(0));
-    private final Pose pickup2Pose = new Pose(30, 131, Math.toRadians(0));
-    private final Pose pickup3Pose = new Pose(45, 128, Math.toRadians(90));
-    private final Pose parkPose = new Pose(68, 96, Math.toRadians(-90));
+    private final Pose startPose = new Pose(60, 9, Math.toRadians(-90));
+    private final Pose scorePose = new Pose(60, 128, Math.toRadians(-35));
+    private final Pose pickup1Pose = new Pose(pickupX, pickup1Y, Math.toRadians(180));
+    private final Pose pickup1FinishPose = new Pose(pickupX+pickupLength, pickup1Y, Math.toRadians(180));
+    private final Pose pickup2Pose = new Pose(pickupX, pickup2Y, Math.toRadians(180));
+    private final Pose pickup2FinishPose = new Pose(pickupX+pickupLength, pickup2Y, Math.toRadians(180));
+    private final Pose pickup3Pose = new Pose(pickupX, pickup3Y, Math.toRadians(180));
+    private final Pose pickup3FinishPose = new Pose(pickupX+pickupLength, pickup3Y, Math.toRadians(180));
+    private final Pose parkPose = new Pose(12, 12, Math.toRadians(180));
 
     // Path chains
     private PathChain scorePreload, grabPickup1, grabPickup2, grabPickup3;
@@ -41,6 +49,8 @@ public class PedroAutoSample extends CommandOpMode {
         grabPickup1 = follower.pathBuilder()
                 .addPath(new BezierLine(scorePose, pickup1Pose))
                 .setLinearHeadingInterpolation(scorePose.getHeading(), pickup1Pose.getHeading())
+                .addPath(new BezierLine(pickup1Pose,pickup1FinishPose))
+                .addPath(new BezierLine(pickup1FinishPose,pickup1Pose))
                 .build();
 
         scorePickup1 = follower.pathBuilder()
@@ -51,6 +61,8 @@ public class PedroAutoSample extends CommandOpMode {
         grabPickup2 = follower.pathBuilder()
                 .addPath(new BezierLine(scorePose, pickup2Pose))
                 .setLinearHeadingInterpolation(scorePose.getHeading(), pickup2Pose.getHeading())
+                .addPath(new BezierLine(pickup2Pose,pickup2FinishPose))
+                .addPath(new BezierLine(pickup2FinishPose,pickup2Pose))
                 .build();
 
         scorePickup2 = follower.pathBuilder()
@@ -61,6 +73,8 @@ public class PedroAutoSample extends CommandOpMode {
         grabPickup3 = follower.pathBuilder()
                 .addPath(new BezierLine(scorePose, pickup3Pose))
                 .setLinearHeadingInterpolation(scorePose.getHeading(), pickup3Pose.getHeading())
+                .addPath(new BezierLine(pickup3Pose,pickup3FinishPose))
+                .addPath(new BezierLine(pickup3FinishPose,pickup3Pose))
                 .build();
 
         scorePickup3 = follower.pathBuilder()
@@ -71,7 +85,7 @@ public class PedroAutoSample extends CommandOpMode {
         park = follower.pathBuilder()
                 .addPath(new BezierCurve(
                         scorePose,
-                        new Pose(68, 110), // Control point
+                        new Pose(60, 12), // Control point
                         parkPose)
                 )
                 .setLinearHeadingInterpolation(scorePose.getHeading(), parkPose.getHeading())
@@ -79,27 +93,32 @@ public class PedroAutoSample extends CommandOpMode {
     }
 
     // Mechanism commands - replace these with your actual subsystem commands
-    private InstantCommand openOuttakeClaw() {
+    private InstantCommand fireTrigger1() {
         return new InstantCommand(() -> {
             // Example: outtakeSubsystem.openClaw();
         });
     }
 
-    private InstantCommand grabSample() {
+    private InstantCommand IntakeOn() {
         return new InstantCommand(() -> {
-            // Example: intakeSubsystem.grabSample();
+            // Example: intakeSubsystem.IntakeOn();
+        });
+    }
+    private InstantCommand IntakeOff() {
+        return new InstantCommand(() -> {
+            // Example: intakeSubsystem.IntakeOff();
         });
     }
 
-    private InstantCommand scoreSample() {
+    private InstantCommand flywheelOn() {
         return new InstantCommand(() -> {
-            // Example: outtakeSubsystem.scoreSample();
+            // Example: shooter.flywheelOn();
         });
     }
 
-    private InstantCommand level1Ascent() {
+    private InstantCommand flywheelOff() {
         return new InstantCommand(() -> {
-            // Example: hangSubsystem.level1Ascent();
+            // Example: shooter.flywheelOff();
         });
     }
 
@@ -115,32 +134,37 @@ public class PedroAutoSample extends CommandOpMode {
         // Create the autonomous command sequence
         SequentialCommandGroup autonomousSequence = new SequentialCommandGroup(
                 // Score preload
+                flywheelOn(),
                 new FollowPathCommand(follower, scorePreload),
-                openOuttakeClaw(),
-                new WaitCommand(1000), // Wait 1 second
+                fireTrigger1(),
+                //new WaitCommand(1000), // Wait 1 second
 
                 // First pickup cycle
+                IntakeOn(),
                 new FollowPathCommand(follower, grabPickup1).setGlobalMaxPower(0.5), // Sets globalMaxPower to 50% for all future paths
                                                                                      // (unless a custom maxPower is given)
-                grabSample(),
+                IntakeOff(),
                 new FollowPathCommand(follower, scorePickup1),
-                scoreSample(),
+                fireTrigger1(),
 
                 // Second pickup cycle
+                IntakeOn(),
                 new FollowPathCommand(follower, grabPickup2),
-                grabSample(),
+                IntakeOff(),
                 new FollowPathCommand(follower, scorePickup2, 1.0), // Overrides maxPower to 100% for this path only
-                scoreSample(),
+                fireTrigger1(),
 
                 // Third pickup cycle
+
+                IntakeOn(),
                 new FollowPathCommand(follower, grabPickup3),
-                grabSample(),
+                IntakeOff(),
                 new FollowPathCommand(follower, scorePickup3),
-                scoreSample(),
+                fireTrigger1(),
 
                 // Park
                 new FollowPathCommand(follower, park, false), // park with holdEnd false
-                level1Ascent()
+                flywheelOff()
         );
 
         // Schedule the autonomous sequence

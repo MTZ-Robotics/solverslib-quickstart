@@ -38,15 +38,15 @@ public class Constants {
             .leftRearMotorDirection(DcMotorSimple.Direction.FORWARD)
             .rightFrontMotorDirection(DcMotorSimple.Direction.REVERSE)
             .rightRearMotorDirection(DcMotorSimple.Direction.REVERSE)
-            .xVelocity(79.7975)
-            .yVelocity(48.0213);
+            .xVelocity(41.485)
+            .yVelocity(5.604);              //48.0213
 
     public static OTOSConstants localizerConstants = new OTOSConstants()
             .hardwareMapName("otos")
             .linearUnit(DistanceUnit.INCH)
             .angleUnit(AngleUnit.RADIANS)
             .offset(new SparkFunOTOS.Pose2D(0, 0, Math.PI / 2))
-            .linearScalar(-29.3755)
+            .linearScalar(-0.474)
             .angularScalar(1.0);
 
     public static PathConstraints pathConstraints = new PathConstraints(
