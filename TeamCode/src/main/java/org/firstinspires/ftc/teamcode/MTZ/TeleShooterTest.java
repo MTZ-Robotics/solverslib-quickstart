@@ -39,11 +39,15 @@ public class TeleShooterTest extends LinearOpMode {
         //Trigger Servo Min Value
         triggerServoLUT.add(0,0);
         triggerServoLUT.add(0.1,0);
+        triggerServoLUT.add(-0.1,0);
         //Trigger Servo Mid Value
         triggerServoLUT.add(.5,.5);
+        triggerServoLUT.add(-.5,.5);
         //Trigger Servo Max Value
         triggerServoLUT.add(.9,1);
+        triggerServoLUT.add(-.9,1);
         triggerServoLUT.add(1,1);
+        triggerServoLUT.add(-1,1);
         triggerServoLUT.createLUT();
 
 
