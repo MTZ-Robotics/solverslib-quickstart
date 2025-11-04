@@ -10,13 +10,14 @@ import com.seattlesolvers.solverslib.command.CommandOpMode;
 import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 import com.seattlesolvers.solverslib.command.WaitCommand;
+import com.seattlesolvers.solverslib.hardware.motors.Motor;
 import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
 import com.seattlesolvers.solverslib.util.TelemetryData;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
 @Autonomous
-public class PedroAutoSample extends CommandOpMode {
+public class PedroAutoSample2MTZ extends CommandOpMode {
     private Follower follower;
     TelemetryData telemetryData = new TelemetryData(telemetry);
     double pickupX = 60;
@@ -96,29 +97,38 @@ public class PedroAutoSample extends CommandOpMode {
     private InstantCommand fireTrigger1() {
         return new InstantCommand(() -> {
             // Example: outtakeSubsystem.openClaw();
+            telemetryData.addData("Fire Trigger",getRuntime());
         });
     }
 
     private InstantCommand IntakeOn() {
         return new InstantCommand(() -> {
             // Example: intakeSubsystem.IntakeOn();
+            telemetryData.addData("Intake On",getRuntime());
         });
     }
     private InstantCommand IntakeOff() {
         return new InstantCommand(() -> {
             // Example: intakeSubsystem.IntakeOff();
+            telemetryData.addData("Intake Off",getRuntime());
         });
     }
 
     private InstantCommand flywheelOn() {
         return new InstantCommand(() -> {
             // Example: shooter.flywheelOn();
+            telemetryData.addData("Flywheel On",getRuntime());
+            new Motor(hardwareMap,"BL").set(1);
+
+            new WaitCommand(1000); // Wait 1 second
+
         });
     }
 
     private InstantCommand flywheelOff() {
         return new InstantCommand(() -> {
             // Example: shooter.flywheelOff();
+            telemetryData.addData("Flywheel Off",getRuntime());
         });
     }
 
@@ -135,24 +145,32 @@ public class PedroAutoSample extends CommandOpMode {
         SequentialCommandGroup autonomousSequence = new SequentialCommandGroup(
                 // Score preload
                 flywheelOn(),
+                new WaitCommand(1000), // Wait 1 second
                 new FollowPathCommand(follower, scorePreload),
                 fireTrigger1(),
-                //new WaitCommand(1000), // Wait 1 second
+                new WaitCommand(1000), // Wait 1 second
 
                 // First pickup cycle
                 IntakeOn(),
                 new FollowPathCommand(follower, grabPickup1).setGlobalMaxPower(0.5), // Sets globalMaxPower to 50% for all future paths
                                                                                      // (unless a custom maxPower is given)
+                new WaitCommand(1000), // Wait 1 second
+
                 IntakeOff(),
+                new WaitCommand(1000), // Wait 1 second
                 new FollowPathCommand(follower, scorePickup1),
                 fireTrigger1(),
+                new WaitCommand(1000), // Wait 1 second
 
                 // Second pickup cycle
                 IntakeOn(),
+                new WaitCommand(1000), // Wait 1 second
                 new FollowPathCommand(follower, grabPickup2),
                 IntakeOff(),
+                new WaitCommand(1000), // Wait 1 second
                 new FollowPathCommand(follower, scorePickup2, 1.0), // Overrides maxPower to 100% for this path only
                 fireTrigger1(),
+                new WaitCommand(1000), // Wait 1 second
 
                 // Third pickup cycle
 

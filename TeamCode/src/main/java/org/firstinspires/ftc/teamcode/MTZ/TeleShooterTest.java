@@ -24,7 +24,7 @@ public class TeleShooterTest extends LinearOpMode {
      * Add Controller Variables & Objects
      ********/
 // Assign Variables & Objects for Control Pads
-    double triggerValue;
+    double triggerValue = 0;
     InterpLUT triggerServoLUT = new InterpLUT();
 
     mtzButtonBehavior topFlywheelFaster = new mtzButtonBehavior();
@@ -36,18 +36,19 @@ public class TeleShooterTest extends LinearOpMode {
     //This is the default opMode call for generically running the opMode in this class directly from the phone without calling it from a super class
     public void runOpMode() throws InterruptedException{
 
-        //Trigger Servo Min Value
-        triggerServoLUT.add(0,0);
-        triggerServoLUT.add(0.1,0);
+
+        triggerServoLUT.add(-1.1,1);
+        triggerServoLUT.add(-.9,1);
+        triggerServoLUT.add(-.5,.5);
         triggerServoLUT.add(-0.1,0);
+        triggerServoLUT.add(0,0);
+        //Trigger Servo Min Value
+        triggerServoLUT.add(0.1,0);
         //Trigger Servo Mid Value
         triggerServoLUT.add(.5,.5);
-        triggerServoLUT.add(-.5,.5);
         //Trigger Servo Max Value
         triggerServoLUT.add(.9,1);
-        triggerServoLUT.add(-.9,1);
-        triggerServoLUT.add(1,1);
-        triggerServoLUT.add(-1,1);
+        triggerServoLUT.add(1.1,1);
         triggerServoLUT.createLUT();
 
 
@@ -97,7 +98,7 @@ public class TeleShooterTest extends LinearOpMode {
 
             bottomFlywheel.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
             topFlywheel.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-            trigger.setPosition(triggerValue);
+            trigger.setPosition(triggerServoLUT.get(triggerValue));
 
             displayTelemetry();
         }
