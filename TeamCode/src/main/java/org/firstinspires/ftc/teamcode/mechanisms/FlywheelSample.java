@@ -16,6 +16,7 @@ import java.util.List;
  * A sample opmode for a flywheel with two motors
  * that are linked mechanically.
  */
+@Disabled
 @TeleOp
 //@Disabled
 public class FlywheelSample extends LinearOpMode {

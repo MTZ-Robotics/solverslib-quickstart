@@ -6,36 +6,28 @@ import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
 import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 import com.seattlesolvers.solverslib.command.WaitCommand;
-import com.seattlesolvers.solverslib.hardware.motors.Motor;
 import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
 import com.seattlesolvers.solverslib.util.TelemetryData;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
-
+@Disabled
 @Autonomous
-public class PedroAutoSample2MTZ extends CommandOpMode {
+public class PedroAutoSample extends CommandOpMode {
     private Follower follower;
     TelemetryData telemetryData = new TelemetryData(telemetry);
-    double pickupX = 60;
-    double pickup1Y = 84;
-    double pickup2Y = 60;
-    double pickup3Y = 36;
-    double pickupLength = 38;
 
     // Poses
-    private final Pose startPose = new Pose(60, 9, Math.toRadians(-90));
-    private final Pose scorePose = new Pose(60, 128, Math.toRadians(-35));
-    private final Pose pickup1Pose = new Pose(pickupX, pickup1Y, Math.toRadians(180));
-    private final Pose pickup1FinishPose = new Pose(pickupX+pickupLength, pickup1Y, Math.toRadians(180));
-    private final Pose pickup2Pose = new Pose(pickupX, pickup2Y, Math.toRadians(180));
-    private final Pose pickup2FinishPose = new Pose(pickupX+pickupLength, pickup2Y, Math.toRadians(180));
-    private final Pose pickup3Pose = new Pose(pickupX, pickup3Y, Math.toRadians(180));
-    private final Pose pickup3FinishPose = new Pose(pickupX+pickupLength, pickup3Y, Math.toRadians(180));
-    private final Pose parkPose = new Pose(12, 12, Math.toRadians(180));
+    private final Pose startPose = new Pose(9, 111, Math.toRadians(-90));
+    private final Pose scorePose = new Pose(16, 128, Math.toRadians(-45));
+    private final Pose pickup1Pose = new Pose(30, 121, Math.toRadians(0));
+    private final Pose pickup2Pose = new Pose(30, 131, Math.toRadians(0));
+    private final Pose pickup3Pose = new Pose(45, 128, Math.toRadians(90));
+    private final Pose parkPose = new Pose(68, 96, Math.toRadians(-90));
 
     // Path chains
     private PathChain scorePreload, grabPickup1, grabPickup2, grabPickup3;
@@ -50,8 +42,6 @@ public class PedroAutoSample2MTZ extends CommandOpMode {
         grabPickup1 = follower.pathBuilder()
                 .addPath(new BezierLine(scorePose, pickup1Pose))
                 .setLinearHeadingInterpolation(scorePose.getHeading(), pickup1Pose.getHeading())
-                .addPath(new BezierLine(pickup1Pose,pickup1FinishPose))
-                .addPath(new BezierLine(pickup1FinishPose,pickup1Pose))
                 .build();
 
         scorePickup1 = follower.pathBuilder()
@@ -62,8 +52,6 @@ public class PedroAutoSample2MTZ extends CommandOpMode {
         grabPickup2 = follower.pathBuilder()
                 .addPath(new BezierLine(scorePose, pickup2Pose))
                 .setLinearHeadingInterpolation(scorePose.getHeading(), pickup2Pose.getHeading())
-                .addPath(new BezierLine(pickup2Pose,pickup2FinishPose))
-                .addPath(new BezierLine(pickup2FinishPose,pickup2Pose))
                 .build();
 
         scorePickup2 = follower.pathBuilder()
@@ -74,8 +62,6 @@ public class PedroAutoSample2MTZ extends CommandOpMode {
         grabPickup3 = follower.pathBuilder()
                 .addPath(new BezierLine(scorePose, pickup3Pose))
                 .setLinearHeadingInterpolation(scorePose.getHeading(), pickup3Pose.getHeading())
-                .addPath(new BezierLine(pickup3Pose,pickup3FinishPose))
-                .addPath(new BezierLine(pickup3FinishPose,pickup3Pose))
                 .build();
 
         scorePickup3 = follower.pathBuilder()
@@ -86,7 +72,7 @@ public class PedroAutoSample2MTZ extends CommandOpMode {
         park = follower.pathBuilder()
                 .addPath(new BezierCurve(
                         scorePose,
-                        new Pose(60, 12), // Control point
+                        new Pose(68, 110), // Control point
                         parkPose)
                 )
                 .setLinearHeadingInterpolation(scorePose.getHeading(), parkPose.getHeading())
@@ -94,41 +80,27 @@ public class PedroAutoSample2MTZ extends CommandOpMode {
     }
 
     // Mechanism commands - replace these with your actual subsystem commands
-    private InstantCommand fireTrigger1() {
+    private InstantCommand openOuttakeClaw() {
         return new InstantCommand(() -> {
             // Example: outtakeSubsystem.openClaw();
-            telemetryData.addData("Fire Trigger",getRuntime());
         });
     }
 
-    private InstantCommand IntakeOn() {
+    private InstantCommand grabSample() {
         return new InstantCommand(() -> {
-            // Example: intakeSubsystem.IntakeOn();
-            telemetryData.addData("Intake On",getRuntime());
-        });
-    }
-    private InstantCommand IntakeOff() {
-        return new InstantCommand(() -> {
-            // Example: intakeSubsystem.IntakeOff();
-            telemetryData.addData("Intake Off",getRuntime());
+            // Example: intakeSubsystem.grabSample();
         });
     }
 
-    private InstantCommand flywheelOn() {
+    private InstantCommand scoreSample() {
         return new InstantCommand(() -> {
-            // Example: shooter.flywheelOn();
-            telemetryData.addData("Flywheel On",getRuntime());
-            new Motor(hardwareMap,"BL").set(1);
-
-            new WaitCommand(1000); // Wait 1 second
-
+            // Example: outtakeSubsystem.scoreSample();
         });
     }
 
-    private InstantCommand flywheelOff() {
+    private InstantCommand level1Ascent() {
         return new InstantCommand(() -> {
-            // Example: shooter.flywheelOff();
-            telemetryData.addData("Flywheel Off",getRuntime());
+            // Example: hangSubsystem.level1Ascent();
         });
     }
 
@@ -144,45 +116,32 @@ public class PedroAutoSample2MTZ extends CommandOpMode {
         // Create the autonomous command sequence
         SequentialCommandGroup autonomousSequence = new SequentialCommandGroup(
                 // Score preload
-                flywheelOn(),
-                new WaitCommand(1000), // Wait 1 second
                 new FollowPathCommand(follower, scorePreload),
-                fireTrigger1(),
+                openOuttakeClaw(),
                 new WaitCommand(1000), // Wait 1 second
 
                 // First pickup cycle
-                IntakeOn(),
                 new FollowPathCommand(follower, grabPickup1).setGlobalMaxPower(0.5), // Sets globalMaxPower to 50% for all future paths
                                                                                      // (unless a custom maxPower is given)
-                new WaitCommand(1000), // Wait 1 second
-
-                IntakeOff(),
-                new WaitCommand(1000), // Wait 1 second
+                grabSample(),
                 new FollowPathCommand(follower, scorePickup1),
-                fireTrigger1(),
-                new WaitCommand(1000), // Wait 1 second
+                scoreSample(),
 
                 // Second pickup cycle
-                IntakeOn(),
-                new WaitCommand(1000), // Wait 1 second
                 new FollowPathCommand(follower, grabPickup2),
-                IntakeOff(),
-                new WaitCommand(1000), // Wait 1 second
+                grabSample(),
                 new FollowPathCommand(follower, scorePickup2, 1.0), // Overrides maxPower to 100% for this path only
-                fireTrigger1(),
-                new WaitCommand(1000), // Wait 1 second
+                scoreSample(),
 
                 // Third pickup cycle
-
-                IntakeOn(),
                 new FollowPathCommand(follower, grabPickup3),
-                IntakeOff(),
+                grabSample(),
                 new FollowPathCommand(follower, scorePickup3),
-                fireTrigger1(),
+                scoreSample(),
 
                 // Park
                 new FollowPathCommand(follower, park, false), // park with holdEnd false
-                flywheelOff()
+                level1Ascent()
         );
 
         // Schedule the autonomous sequence

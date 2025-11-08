@@ -1,13 +1,16 @@
-package org.firstinspires.ftc.teamcode.MTZ;
+package org.firstinspires.ftc.teamcode.archive;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.seattlesolvers.solverslib.util.InterpLUT;
 
+import org.firstinspires.ftc.teamcode.MTZ.mtzButtonBehavior;
+
 @TeleOp(name="Tele Shooter Test", group ="Test")
-//@Disabled
+@Disabled
 /****  Test Shooter with speed and trigger controls */
 
 public class TeleShooterTest extends LinearOpMode {
