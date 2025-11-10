@@ -39,7 +39,7 @@ public class AutoTestRed2 extends OpMode {
     public double timeToResetTrigger = 2.5;
 
     double triggerToIntake = 0.1;
-    double triggerToHold = 0.5;
+    double triggerToHold = 0.4;
     double triggerToFire = 0.9;
 
     private double redTargetX=140;

@@ -26,7 +26,7 @@ public class MTZPedroTeleOp extends CommandOpMode {
     double topFlywheelRatio = .75;
     double bottomFlywheelDesired = 0.9;
     double triggerToIntake = 0.1;
-    double triggerToHold = 0.5;
+    double triggerToHold = 0.45;
     double triggerToFire = 0.9;
 
     /*************************

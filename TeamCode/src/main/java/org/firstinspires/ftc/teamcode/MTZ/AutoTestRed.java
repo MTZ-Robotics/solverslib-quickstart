@@ -32,9 +32,9 @@ public class AutoTestRed extends OpMode {
     public int alliance = red;
     public int startingPosition = 1;
     public double topFlywheelRatio = .45;
-    public double bottomFlywheelDesired = 0.8;
+    public double bottomFlywheelDesired = 0.76;
     public int fireLoopCountMax = 3;
-    public double chassisSpeedMax = 0.1;
+    public double chassisSpeedMax = 20;
     public double timeToFireTrigger = 1.0;
     public double timeToResetTrigger = 2.5;
 
@@ -46,10 +46,10 @@ public class AutoTestRed extends OpMode {
     private double redTargetY=140;
     private double blueTargetX=4;
     private double blueTargetY=140;
-    private final Pose redScorePose = new Pose(144-43, 144-36, Math.toRadians(45));
+    private final Pose redScorePose = new Pose(144-50, 144-50, Math.toRadians(45));
     private final Pose redStartPose1 = new Pose(144-21.5, 144-14.5, Math.toRadians(45));
     private final Pose redStartPose2 = new Pose(121, 126, Math.toRadians(45));
-    private final Pose redInterPose = new Pose(96, 108, Math.toRadians(45));
+    private final Pose redInterPose = new Pose(144-50, 144-50, Math.toRadians(45));
     private final Pose redEndPose = new Pose(92, 144-14, Math.toRadians(0));
 
     //private final Pose blueScorePose = new Pose(48, 108, Math.atan(blueTargetY-108/blueTargetX-48));
@@ -124,10 +124,12 @@ public class AutoTestRed extends OpMode {
 
         scorePreload = new Path(new BezierLine(startPose, scorePose));
         scorePreload.setLinearHeadingInterpolation(startPose.getHeading(), scorePose.getHeading());
+        scorePreload.setVelocityConstraint(chassisSpeedMax);
 
         backUpToShoot = autoRedFollower.pathBuilder()
                 .addPath(new BezierLine(startPose, interPose))
                 .setLinearHeadingInterpolation(startPose.getHeading(), interPose.getHeading())
+                .setVelocityConstraint(chassisSpeedMax)
                 .build();
          goPark = autoRedFollower.pathBuilder()
                 .addPath(new BezierLine(interPose, endPose))

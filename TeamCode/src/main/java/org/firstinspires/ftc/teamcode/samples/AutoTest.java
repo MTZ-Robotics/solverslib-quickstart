@@ -52,7 +52,7 @@ public class AutoTest extends OpMode {
     private final Pose redScorePose = new Pose(144-43, 144-36, Math.atan(redTargetY-108/redTargetX-96));
     private final Pose redStartPose1 = new Pose(144-21.5, 144-14.5, Math.toRadians(45));
     private final Pose redStartPose2 = new Pose(121, 126, Math.toRadians(45));
-    private final Pose redInterPose = new Pose(96, 108, Math.toRadians(45));
+    private final Pose redInterPose = new Pose(144-50, 144-50, Math.toRadians(45));
     private final Pose redEndPose = new Pose(102, 144-24, Math.toRadians(0));
 
     //private final Pose blueScorePose = new Pose(48, 108, Math.atan(blueTargetY-108/blueTargetX-48));

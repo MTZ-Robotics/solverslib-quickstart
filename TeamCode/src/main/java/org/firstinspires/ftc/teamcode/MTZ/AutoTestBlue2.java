@@ -30,15 +30,15 @@ public class AutoTestBlue2 extends OpMode {
     /****************** Modify These Variables ************************/
     public int alliance = blue;
     public int startingPosition = 1;
-    public double topFlywheelRatio = .45;
-    public double bottomFlywheelDesired = 0.8;
+    public double topFlywheelRatio = 0.7;
+    public double bottomFlywheelDesired = 0.9;
     public int fireLoopCountMax = 3;
     public double chassisSpeedMax = 0.1;
     public double timeToFireTrigger = 1.0;
     public double timeToResetTrigger = 2.5;
 
     double triggerToIntake = 0.1;
-    double triggerToHold = 0.5;
+    double triggerToHold = 0.4;
     double triggerToFire = 0.9;
 
     private double redTargetX=140;
