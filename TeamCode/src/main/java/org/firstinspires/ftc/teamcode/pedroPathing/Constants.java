@@ -20,7 +20,7 @@ public class Constants {
     public static int red = 1;
     public static int blue = -1;
     public static FollowerConstants followerConstants = new FollowerConstants()
-            .mass(5)
+            .mass(7.9)
             .forwardZeroPowerAcceleration(-41.95)
             .lateralZeroPowerAcceleration(-81.9)
             .useSecondaryTranslationalPIDF(false)

@@ -12,7 +12,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 
-@Disabled
+@TeleOp(name="LimeLightSample", group="Linear Opmode")
 public class LimeLightSample extends LinearOpMode {
 
     private Limelight3A limelight;
@@ -30,6 +30,12 @@ public class LimeLightSample extends LinearOpMode {
          * Starts polling for data.
          */
         limelight.start();
+
+
+        telemetry.addData(">", "Robot Ready.  Press Play.");
+        telemetry.update();
+        waitForStart();
+
 
         while (opModeIsActive()) {
             LLResult result = limelight.getLatestResult();

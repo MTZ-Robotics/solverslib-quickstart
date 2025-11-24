@@ -1,44 +1,25 @@
-/* Copyright (c) 2023 FIRST. All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without modification,
- * are permitted (subject to the limitations in the disclaimer below) provided that
- * the following conditions are met:
- *
- * Redistributions of source code must retain the above copyright notice, this list
- * of conditions and the following disclaimer.
- *
- * Redistributions in binary form must reproduce the above copyright notice, this
- * list of conditions and the following disclaimer in the documentation and/or
- * other materials provided with the distribution.
- *
- * Neither the name of FIRST nor the names of its contributors may be used to endorse or
- * promote products derived from this software without specific prior written permission.
- *
- * NO EXPRESS OR IMPLIED LICENSES TO ANY PARTY'S PATENT RIGHTS ARE GRANTED BY THIS
- * LICENSE. THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
- * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+package org.firstinspires.ftc.teamcode.MTZ;
 
-package org.firstinspires.ftc.teamcode.samples;
 
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import static org.firstinspires.ftc.teamcode.pedroPathing.Constants.blue;
+import static org.firstinspires.ftc.teamcode.pedroPathing.Constants.driveConstants;
+import static org.firstinspires.ftc.teamcode.pedroPathing.Constants.red;
+
+import com.pedropathing.follower.Follower;
+import com.pedropathing.geometry.Pose;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.Range;
+import com.seattlesolvers.solverslib.command.CommandOpMode;
+import com.seattlesolvers.solverslib.util.InterpLUT;
+import com.seattlesolvers.solverslib.util.TelemetryData;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.BuiltinCameraDirection;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.ExposureControl;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.GainControl;
+import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
@@ -46,63 +27,25 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-/*
- * This OpMode illustrates using a camera to locate and drive towards a specific AprilTag.
- * The code assumes a Holonomic (Mecanum or X Drive) Robot.
- *
- * For an introduction to AprilTags, see the ftc-docs link below:
- * https://ftc-docs.firstinspires.org/en/latest/apriltag/vision_portal/apriltag_intro/apriltag-intro.html
- *
- * When an AprilTag in the TagLibrary is detected, the SDK provides location and orientation of the tag, relative to the camera.
- * This information is provided in the "ftcPose" member of the returned "detection", and is explained in the ftc-docs page linked below.
- * https://ftc-docs.firstinspires.org/apriltag-detection-values
- *
- * The drive goal is to rotate to keep the Tag centered in the camera, while strafing to be directly in front of the tag, and
- * driving towards the tag to achieve the desired distance.
- * To reduce any motion blur (which will interrupt the detection process) the Camera exposure is reduced to a very low value (5mS)
- * You can determine the best Exposure and Gain values by using the ConceptAprilTagOptimizeExposure OpMode in this Samples folder.
- *
- * The code assumes a Robot Configuration with motors named: leftfront_drive and rightfront_drive, leftback_drive and rightback_drive.
- * The motor directions must be set so a positive power goes forward on all wheels.
- * This sample assumes that the current game AprilTag Library (usually for the current season) is being loaded by default,
- * so you should choose to approach a valid tag ID.
- *
- * Under manual control, the left stick will move forward/back & left/right.  The right stick will rotate the robot.
- * Manually drive the robot until it displays Target data on the Driver Station.
- *
- * Press and hold the *Left Bumper* to enable the automatic "Drive to target" mode.
- * Release the Left Bumper to return to manual driving mode.
- *
- * Under "Drive To Target" mode, the robot has three goals:
- * 1) Turn the robot to always keep the Tag centered on the camera frame. (Use the Target Bearing to turn the robot.)
- * 2) Strafe the robot towards the centerline of the Tag, so it approaches directly in front  of the tag.  (Use the Target Yaw to strafe the robot)
- * 3) Drive towards the Tag to get to the desired distance.  (Use Tag Range to drive the robot forward/backward)
- *
- * Use DESIRED_DISTANCE to set how close you want the robot to get to the target.
- * Speed and Turn sensitivity can be adjusted using the SPEED_GAIN, STRAFE_GAIN and TURN_GAIN constants.
- *
- * Use Android Studio to Copy this Class, and Paste it into the TeamCode/src/main/java/org/firstinspires/ftc/teamcode folder.
- * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list.
- *
- */
-
-@TeleOp(name="Omni Drive To AprilTag", group = "Concept")
-//@Disabled
-public class RobotAutoDriveToAprilTagOmni extends LinearOpMode
-{
+@TeleOp
+public class MTZPedroTeleOpWithCamera3 extends CommandOpMode {
+    public int alliance = red;
     // Adjust these numbers to suit your robot.
     final double DESIRED_DISTANCE = 70.0; //  this is how close the camera should get to the target (inches)
 
     //  Set the GAIN constants to control the relationship between the measured position error, and how much power is
     //  applied to the drive motors to correct the error.
     //  Drive = Error * Gain    Make these values smaller for smoother control, or larger for a more aggressive response.
-    final double SPEED_GAIN  =  0.02  ;   //  Forward Speed Control "Gain". e.g. Ramp up to 50% power at a 25 inch error.   (0.50 / 25.0)
-    final double STRAFE_GAIN =  0.015 ;   //  Strafe Speed Control "Gain".  e.g. Ramp up to 37% power at a 25 degree Yaw error.   (0.375 / 25.0)
-    final double TURN_GAIN   =  0.01  ;   //  Turn Control "Gain".  e.g. Ramp up to 25% power at a 25 degree error. (0.25 / 25.0)
+    final double SPEED_GAIN  =  0.02   ;   //  Forward Speed Control "Gain". e.g. Ramp up to 50% power at a 25 inch error.   (0.50 / 25.0)
+    final double STRAFE_GAIN =  0.015  ;   //  Strafe Speed Control "Gain".  e.g. Ramp up to 37% power at a 25 degree Yaw error.   (0.375 / 25.0)
+    final double TURN_GAIN   =  0.01   ;   //  Turn Control "Gain".  e.g. Ramp up to 25% power at a 25 degree error. (0.25 / 25.0)
 
-    final double MAX_AUTO_SPEED = 0.5;   //  Clip the approach speed to this max value (adjust for your robot)
-    final double MAX_AUTO_STRAFE= 0.5;   //  Clip the strafing speed to this max value (adjust for your robot)
-    final double MAX_AUTO_TURN  = 0.3;   //  Clip the turn speed to this max value (adjust for your robot)
+    final double MAX_AUTO_SPEED = 0.5/2;   //  Clip the approach speed to this max value (adjust for your robot)
+    final double MAX_AUTO_STRAFE= 0.5/2;   //  Clip the strafing speed to this max value (adjust for your robot)
+    final double MAX_AUTO_TURN  = 0.3/2;   //  Clip the turn speed to this max value (adjust for your robot)
+    private static int DESIRED_TAG_ID = -1;     // Choose the tag you want to approach or set to -1 for ANY tag.
+    private static final int RED_TARGET_TAG_ID = 24;     // Choose the tag you want to approach or set to -1 for ANY tag.
+    private static final int BLUE_TARGET_TAG_ID = 20;     // Choose the tag you want to approach or set to -1 for ANY tag.
 
     private DcMotor leftFrontDrive   = null;  //  Used to control the left front drive wheel
     private DcMotor rightFrontDrive  = null;  //  Used to control the right front drive wheel
@@ -110,13 +53,99 @@ public class RobotAutoDriveToAprilTagOmni extends LinearOpMode
     private DcMotor rightBackDrive   = null;  //  Used to control the right back drive wheel
 
     private static final boolean USE_WEBCAM = true;  // Set true to use a webcam, or false for a phone camera
-    private static final int DESIRED_TAG_ID = -1;     // Choose the tag you want to approach or set to -1 for ANY tag.
     private VisionPortal visionPortal;               // Used to manage the video source.
     private AprilTagProcessor aprilTag;              // Used for managing the AprilTag detection process.
     private AprilTagDetection desiredTag = null;     // Used to hold the data for a detected AprilTag
 
-    @Override public void runOpMode()
-    {
+
+    Follower teleFollower;
+    TelemetryData telemetryData = new TelemetryData(telemetry);
+
+    boolean runFlywheel = false;
+    double topFlywheelRatio = .75;
+    double bottomFlywheelDesired = 0.9;
+    double triggerToIntake = 0.1;
+    double triggerToHold = 0.45;
+    double triggerToFire = 0.9;
+
+    /*************************
+     * Motor & Servo Variables
+     *************************/
+    private DcMotor bottomFlywheel;
+    private DcMotor topFlywheel;
+    private Servo trigger;
+    private Servo intake1;
+
+    //CRServo intake1 = new CRServo(hardwareMap, "s6");
+
+
+    /*******
+     * Add Controller Variables & Objects
+     ********/
+// Assign Variables & Objects for Control Pads
+    double triggerValue = 0;
+    double aimError = 0;
+    double chassisSpeedRatio=0.75;
+    InterpLUT triggerServoLUT = new InterpLUT();
+
+    mtzButtonBehavior topFlywheelFaster = new mtzButtonBehavior();
+    mtzButtonBehavior bottomFlywheelFaster = new mtzButtonBehavior();
+    mtzButtonBehavior topFlywheelSlower = new mtzButtonBehavior();
+    mtzButtonBehavior bottomFlywheelSlower = new mtzButtonBehavior();
+    mtzButtonBehavior aimBumper = new mtzButtonBehavior();
+    mtzButtonBehavior triggerHold = new mtzButtonBehavior();
+    mtzButtonBehavior triggerIntake = new mtzButtonBehavior();
+    mtzButtonBehavior flywheelOn = new mtzButtonBehavior();
+    mtzButtonBehavior flywheelOff = new mtzButtonBehavior();
+    mtzButtonBehavior redAllianceButton = new mtzButtonBehavior();
+    mtzButtonBehavior blueAllianceButton = new mtzButtonBehavior();
+    double chassisSpeedSlow;
+    double chassisSpeedFast;
+    double triggerFire = 0;
+
+    @Override
+    public void initialize() {
+        teleFollower = Constants.createFollower(hardwareMap);
+
+        //Red Starting Point
+
+        teleFollower.setStartingPose(new Pose(82, 144-16, Math.toRadians(0)));
+        super.reset();
+
+        teleFollower.startTeleopDrive();
+
+        bottomFlywheel = hardwareMap.dcMotor.get("m5");
+        topFlywheel = hardwareMap.dcMotor.get("m6");
+        bottomFlywheel.setDirection(DcMotor.Direction.FORWARD);
+        topFlywheel.setDirection(DcMotor.Direction.REVERSE);
+        bottomFlywheel.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        topFlywheel.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+
+        trigger = hardwareMap.servo.get("s12");
+        trigger.setDirection(Servo.Direction.REVERSE);
+        //trigger.setPosition(triggerToHold);
+
+        //intake1.setZeroPowerBehavior(CRServo.ZeroPowerBehavior.FLOAT);
+        intake1 = hardwareMap.servo.get("s6");
+
+    }
+
+    @Override
+    public void run() {
+        super.run();
+
+        /* Robot-Centric Drive
+        teleFollower.setTeleOpMovementVectors(-gamepad1.left_stick_y, -gamepad1.left_stick_x, -gamepad1.right_stick_x, true);
+        */
+
+        // Field-Centric Drive
+
+        //teleFollower.setTeleOpDrive(-gamepad1.left_stick_y, -gamepad1.left_stick_x, -gamepad1.right_stick_x, false);
+
+
+
+
+
         boolean targetFound     = false;    // Set to true when an AprilTag target is detected
         double  drive           = 0;        // Desired forward power/speed (-1 to +1)
         double  strafe          = 0;        // Desired strafe power/speed (-1 to +1)
@@ -136,13 +165,13 @@ public class RobotAutoDriveToAprilTagOmni extends LinearOpMode
         // To drive forward, most robots need the motor on one side to be reversed, because the axles point in opposite directions.
         // When run, this OpMode should start both motors driving forward. So adjust these two lines based on your first test drive.
         // Note: The settings here assume direct drive on left and right wheels.  Gear Reduction or 90 Deg drives may require direction flips
-        leftFrontDrive.setDirection(DcMotor.Direction.REVERSE);
-        leftBackDrive.setDirection(DcMotor.Direction.REVERSE);
-        rightFrontDrive.setDirection(DcMotor.Direction.FORWARD);
-        rightBackDrive.setDirection(DcMotor.Direction.FORWARD);
+        leftFrontDrive.setDirection(DcMotor.Direction.FORWARD);
+        leftBackDrive.setDirection(DcMotor.Direction.FORWARD);
+        rightFrontDrive.setDirection(DcMotor.Direction.REVERSE);
+        rightBackDrive.setDirection(DcMotor.Direction.REVERSE);
 
         if (USE_WEBCAM)
-            setManualExposure(6, 150);  // Use low exposure time to reduce motion blur
+            setManualExposure(6, 250);  // Use low exposure time to reduce motion blur
 
         // Wait for driver to press start
         telemetry.addData("Camera preview on/off", "3 dots, Camera Stream");
@@ -152,6 +181,129 @@ public class RobotAutoDriveToAprilTagOmni extends LinearOpMode
 
         while (opModeIsActive())
         {
+
+
+
+
+            /**********
+             *
+             * Chassis Control
+             */
+            aimError=Math.toRadians(45);         //-teleFollower.getPose().getHeading();
+
+
+            /***
+             * Chassis Speed Control
+             */
+            driveConstants.maxPower(1.0);
+            chassisSpeedFast=gamepad1.right_trigger;
+            chassisSpeedSlow=gamepad1.left_trigger;
+
+            if(chassisSpeedFast>0.5){
+                chassisSpeedRatio=1.0;
+            } else if(chassisSpeedSlow>0.5){
+                chassisSpeedRatio=0.2;
+            } else {
+                chassisSpeedRatio=0.75;
+            }
+
+
+            //triggerValue = triggerServoLUT.get(gamepad1.right_trigger);
+            bottomFlywheelFaster.update(gamepad2.dpad_up);
+            topFlywheelFaster.update(gamepad2.dpad_left);
+            topFlywheelSlower.update(gamepad2.dpad_right);
+            bottomFlywheelSlower.update(gamepad2.dpad_down);
+            aimBumper.update(gamepad1.left_bumper);
+            triggerHold.update(gamepad2.y);
+            triggerIntake.update(gamepad2.a);
+            flywheelOn.update(gamepad2.b);
+            flywheelOff.update(gamepad2.x);
+            triggerFire = gamepad2.right_trigger;
+
+            redAllianceButton.update(gamepad1.dpad_up);
+            blueAllianceButton.update(gamepad1.dpad_down);
+
+
+
+
+            if(topFlywheelFaster.clickedDown){topFlywheelRatio+=.05;}
+            if(topFlywheelSlower.clickedDown){topFlywheelRatio-=0.05;}
+            if(bottomFlywheelFaster.clickedDown){bottomFlywheelDesired+=0.05;}
+            if(bottomFlywheelSlower.clickedDown){bottomFlywheelDesired-=0.05;}
+            if(flywheelOn.clickedDown){runFlywheel=true;}
+            if(flywheelOff.clickedDown){runFlywheel=false;}
+            if (runFlywheel) {
+                bottomFlywheel.setPower(bottomFlywheelDesired);
+                topFlywheel.setPower(topFlywheelRatio * bottomFlywheelDesired);
+                bottomFlywheel.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                topFlywheel.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+            }
+            else {
+                bottomFlywheel.setPower(0);
+                topFlywheel.setPower(0);
+            }
+
+
+
+            if (triggerIntake.isDown){
+                trigger.setPosition(triggerToIntake);
+            } else if (triggerFire>0.5) {
+                trigger.setPosition(triggerToFire);
+            } else {
+                trigger.setPosition(triggerToHold);
+            }
+
+            if (redAllianceButton.clickedDown){
+                alliance=red;
+            }
+            if (blueAllianceButton.clickedDown){
+                alliance=blue;
+            }
+            if (alliance==red){
+                DESIRED_TAG_ID = RED_TARGET_TAG_ID;
+            } else {
+                DESIRED_TAG_ID = BLUE_TARGET_TAG_ID;
+            }
+
+            /**
+             * Set the intake roller to spin if the trigger servo is beyond the hold position on it's way to intake
+             */
+
+        /*if(trigger.getPosition()<=triggerToHold) {
+            intake1.setPosition(0.0);
+        }
+        else  {
+            intake1.setPosition(0.5);
+        }
+
+         */
+
+            telemetryData.addData("Alliance (1 Red) ", alliance);
+            telemetryData.addData("X", teleFollower.getPose().getX());
+            telemetryData.addData("Y", teleFollower.getPose().getY());
+            telemetryData.addData("Heading", teleFollower.getPose().getHeading());
+            telemetryData.addData("Top Flywheel Power", topFlywheel.getPower());
+            telemetryData.addData("Top Flywheel Ratio", topFlywheelRatio);
+            telemetryData.addData("Bottom Flywheel Power", bottomFlywheel.getPower());
+            telemetryData.addData("Trigger Value", triggerValue);
+            telemetryData.addData("Trigger Position", trigger.getPosition());
+            telemetryData.addData("Aim Error", aimError);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
             targetFound = false;
             desiredTag  = null;
 
@@ -211,45 +363,20 @@ public class RobotAutoDriveToAprilTagOmni extends LinearOpMode
             }
             telemetry.update();
 
+            //teleFollower.setTeleOpDrive(-gamepad1.left_stick_y*chassisSpeedRatio, -gamepad1.left_stick_x*chassisSpeedRatio, -gamepad1.right_stick_x*chassisSpeedRatio, false);
+            teleFollower.setTeleOpDrive(drive, strafe, turn, gamepad1.left_bumper);
+            teleFollower.update();
             // Apply desired axes motions to the drivetrain.
-            moveRobot(drive, strafe, turn);
             sleep(10);
         }
-    }
 
-    /**
-     * Move robot according to desired axes motions
-     * <p>
-     * Positive X is forward
-     * <p>
-     * Positive Y is strafe left
-     * <p>
-     * Positive Yaw is counter-clockwise
-     */
-    public void moveRobot(double x, double y, double yaw) {
-        // Calculate wheel powers.
-        double leftFrontPower    =  x -y -yaw;
-        double rightFrontPower   =  x +y +yaw;
-        double leftBackPower     =  x +y -yaw;
-        double rightBackPower    =  x -y +yaw;
 
-        // Normalize wheel powers to be less than 1.0
-        double max = Math.max(Math.abs(leftFrontPower), Math.abs(rightFrontPower));
-        max = Math.max(max, Math.abs(leftBackPower));
-        max = Math.max(max, Math.abs(rightBackPower));
 
-        if (max > 1.0) {
-            leftFrontPower /= max;
-            rightFrontPower /= max;
-            leftBackPower /= max;
-            rightBackPower /= max;
-        }
 
-        // Send powers to the wheels.
-        leftFrontDrive.setPower(leftFrontPower);
-        rightFrontDrive.setPower(rightFrontPower);
-        leftBackDrive.setPower(leftBackPower);
-        rightBackDrive.setPower(rightBackPower);
+
+
+
+
     }
 
     /**
@@ -259,7 +386,7 @@ public class RobotAutoDriveToAprilTagOmni extends LinearOpMode
         // Create the AprilTag processor by using a builder.
         aprilTag = new AprilTagProcessor.Builder().build();
 
-        // Adjust Image Decimation to trade-off detection-range for detection-rate.
+        // Adjust Image Decimation to trade-off detection-range for detection-rate.7
         // e.g. Some typical detection data using a Logitech C920 WebCam
         // Decimation = 1 ..  Detect 2" Tag from 10 feet away at 10 Frames per second
         // Decimation = 2 ..  Detect 2" Tag from 6  feet away at 22 Frames per second
@@ -319,4 +446,5 @@ public class RobotAutoDriveToAprilTagOmni extends LinearOpMode
             sleep(20);
         }
     }
+
 }
