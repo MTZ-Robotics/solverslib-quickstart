@@ -29,7 +29,7 @@ import java.util.concurrent.TimeUnit;
 
 @TeleOp
 public class MTZPedroTeleOpWithCamera3 extends CommandOpMode {
-    public int alliance = red;
+    public int alliance = blue;
     // Adjust these numbers to suit your robot.
     final double DESIRED_DISTANCE = 70.0; //  this is how close the camera should get to the target (inches)
 
