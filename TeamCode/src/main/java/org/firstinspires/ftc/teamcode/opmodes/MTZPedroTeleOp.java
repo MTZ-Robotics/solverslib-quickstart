@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.MTZ;
+package org.firstinspires.ftc.teamcode.opmodes;
 
 
 import static org.firstinspires.ftc.teamcode.pedroPathing.Constants.driveConstants;
@@ -7,14 +7,12 @@ import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
-import com.seattlesolvers.solverslib.hardware.motors.CRServo;
-import com.seattlesolvers.solverslib.hardware.motors.Motor;
 import com.seattlesolvers.solverslib.util.InterpLUT;
 import com.seattlesolvers.solverslib.util.TelemetryData;
 
+import org.firstinspires.ftc.teamcode.util.mtzButtonBehavior;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
 @TeleOp

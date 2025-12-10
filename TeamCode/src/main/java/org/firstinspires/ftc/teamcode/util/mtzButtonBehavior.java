@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.MTZ;
+package org.firstinspires.ftc.teamcode.util;
 
 public class mtzButtonBehavior {
 

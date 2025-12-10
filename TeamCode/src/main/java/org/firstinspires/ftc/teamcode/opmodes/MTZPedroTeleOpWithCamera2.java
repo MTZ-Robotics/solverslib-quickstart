@@ -1,13 +1,14 @@
-package org.firstinspires.ftc.teamcode.MTZ;
+package org.firstinspires.ftc.teamcode.opmodes;
 
 
+import static org.firstinspires.ftc.teamcode.pedroPathing.Constants.blue;
 import static org.firstinspires.ftc.teamcode.pedroPathing.Constants.driveConstants;
+import static org.firstinspires.ftc.teamcode.pedroPathing.Constants.red;
 
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.Range;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
@@ -18,6 +19,7 @@ import org.firstinspires.ftc.robotcore.external.hardware.camera.BuiltinCameraDir
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.ExposureControl;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.GainControl;
+import org.firstinspires.ftc.teamcode.util.mtzButtonBehavior;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
@@ -27,10 +29,8 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 @TeleOp
-public class MTZPedroTeleOpWithCamera extends CommandOpMode {
-
-
-
+public class MTZPedroTeleOpWithCamera2 extends CommandOpMode {
+    public int alliance = red;
     // Adjust these numbers to suit your robot.
     final double DESIRED_DISTANCE = 70.0; //  this is how close the camera should get to the target (inches)
 
@@ -44,7 +44,7 @@ public class MTZPedroTeleOpWithCamera extends CommandOpMode {
     final double MAX_AUTO_SPEED = 0.5/2;   //  Clip the approach speed to this max value (adjust for your robot)
     final double MAX_AUTO_STRAFE= 0.5/2;   //  Clip the strafing speed to this max value (adjust for your robot)
     final double MAX_AUTO_TURN  = 0.3/2;   //  Clip the turn speed to this max value (adjust for your robot)
-    private static final int DESIRED_TAG_ID = -1;     // Choose the tag you want to approach or set to -1 for ANY tag.
+    private static int DESIRED_TAG_ID = -1;     // Choose the tag you want to approach or set to -1 for ANY tag.
     private static final int RED_TARGET_TAG_ID = 24;     // Choose the tag you want to approach or set to -1 for ANY tag.
     private static final int BLUE_TARGET_TAG_ID = 20;     // Choose the tag you want to approach or set to -1 for ANY tag.
 
@@ -143,99 +143,7 @@ public class MTZPedroTeleOpWithCamera extends CommandOpMode {
 
         //teleFollower.setTeleOpDrive(-gamepad1.left_stick_y, -gamepad1.left_stick_x, -gamepad1.right_stick_x, false);
 
-        /**********
-         *
-         * Chassis Control
-         */
-        aimError=Math.toRadians(45);         //-teleFollower.getPose().getHeading();
 
-
-        /***
-         * Chassis Speed Control
-         */
-        driveConstants.maxPower(1.0);
-        chassisSpeedFast=gamepad1.right_trigger;
-        chassisSpeedSlow=gamepad1.left_trigger;
-
-        if(chassisSpeedFast>0.5){
-            chassisSpeedRatio=1.0;
-        } else if(chassisSpeedSlow>0.5){
-            chassisSpeedRatio=0.2;
-        } else {
-            chassisSpeedRatio=0.75;
-        }
-
-
-        //triggerValue = triggerServoLUT.get(gamepad1.right_trigger);
-        bottomFlywheelFaster.update(gamepad2.dpad_up);
-        topFlywheelFaster.update(gamepad2.dpad_left);
-        topFlywheelSlower.update(gamepad2.dpad_right);
-        bottomFlywheelSlower.update(gamepad2.dpad_down);
-        aimBumper.update(gamepad1.left_bumper);
-        triggerHold.update(gamepad2.y);
-        triggerIntake.update(gamepad2.a);
-        flywheelOn.update(gamepad2.b);
-        flywheelOff.update(gamepad2.x);
-        triggerFire = gamepad2.right_trigger;
-
-        redAllianceButton.update(gamepad1.dpad_up);
-        blueAllianceButton.update(gamepad1.dpad_down);
-
-
-
-
-        if(topFlywheelFaster.clickedDown){topFlywheelRatio+=.05;}
-        if(topFlywheelSlower.clickedDown){topFlywheelRatio-=0.05;}
-        if(bottomFlywheelFaster.clickedDown){bottomFlywheelDesired+=0.05;}
-        if(bottomFlywheelSlower.clickedDown){bottomFlywheelDesired-=0.05;}
-        if(flywheelOn.clickedDown){runFlywheel=true;}
-        if(flywheelOff.clickedDown){runFlywheel=false;}
-        if (runFlywheel) {
-            bottomFlywheel.setPower(bottomFlywheelDesired);
-            topFlywheel.setPower(topFlywheelRatio * bottomFlywheelDesired);
-            bottomFlywheel.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            topFlywheel.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-
-        }
-        else {
-            bottomFlywheel.setPower(0);
-            topFlywheel.setPower(0);
-        }
-
-
-
-        if (triggerIntake.isDown){
-            trigger.setPosition(triggerToIntake);
-        } else if (triggerFire>0.5) {
-            trigger.setPosition(triggerToFire);
-        } else {
-            trigger.setPosition(triggerToHold);
-        }
-
-        /**
-         * Set the intake roller to spin if the trigger servo is beyond the hold position on it's way to intake
-         */
-
-        /*if(trigger.getPosition()<=triggerToHold) {
-            intake1.setPosition(0.0);
-        }
-        else  {
-            intake1.setPosition(0.5);
-        }
-
-         */
-
-        telemetryData.addData("X", teleFollower.getPose().getX());
-        telemetryData.addData("Y", teleFollower.getPose().getY());
-        telemetryData.addData("Heading", teleFollower.getPose().getHeading());
-        telemetryData.addData("Top Flywheel Power", topFlywheel.getPower());
-        telemetryData.addData("Top Flywheel Ratio", topFlywheelRatio);
-        telemetryData.addData("Bottom Flywheel Power", bottomFlywheel.getPower());
-        telemetryData.addData("Trigger Value", triggerValue);
-        telemetryData.addData("Trigger Position", trigger.getPosition());
-        telemetryData.addData("Aim Error", aimError);
-
-        telemetryData.update();
 
 
 
@@ -274,6 +182,129 @@ public class MTZPedroTeleOpWithCamera extends CommandOpMode {
 
         while (opModeIsActive())
         {
+
+
+
+
+            /**********
+             *
+             * Chassis Control
+             */
+            aimError=Math.toRadians(45);         //-teleFollower.getPose().getHeading();
+
+
+            /***
+             * Chassis Speed Control
+             */
+            driveConstants.maxPower(1.0);
+            chassisSpeedFast=gamepad1.right_trigger;
+            chassisSpeedSlow=gamepad1.left_trigger;
+
+            if(chassisSpeedFast>0.5){
+                chassisSpeedRatio=1.0;
+            } else if(chassisSpeedSlow>0.5){
+                chassisSpeedRatio=0.2;
+            } else {
+                chassisSpeedRatio=0.75;
+            }
+
+
+            //triggerValue = triggerServoLUT.get(gamepad1.right_trigger);
+            bottomFlywheelFaster.update(gamepad2.dpad_up);
+            topFlywheelFaster.update(gamepad2.dpad_left);
+            topFlywheelSlower.update(gamepad2.dpad_right);
+            bottomFlywheelSlower.update(gamepad2.dpad_down);
+            aimBumper.update(gamepad1.left_bumper);
+            triggerHold.update(gamepad2.y);
+            triggerIntake.update(gamepad2.a);
+            flywheelOn.update(gamepad2.b);
+            flywheelOff.update(gamepad2.x);
+            triggerFire = gamepad2.right_trigger;
+
+            redAllianceButton.update(gamepad1.dpad_up);
+            blueAllianceButton.update(gamepad1.dpad_down);
+
+
+
+
+            if(topFlywheelFaster.clickedDown){topFlywheelRatio+=.05;}
+            if(topFlywheelSlower.clickedDown){topFlywheelRatio-=0.05;}
+            if(bottomFlywheelFaster.clickedDown){bottomFlywheelDesired+=0.05;}
+            if(bottomFlywheelSlower.clickedDown){bottomFlywheelDesired-=0.05;}
+            if(flywheelOn.clickedDown){runFlywheel=true;}
+            if(flywheelOff.clickedDown){runFlywheel=false;}
+            if (runFlywheel) {
+                bottomFlywheel.setPower(bottomFlywheelDesired);
+                topFlywheel.setPower(topFlywheelRatio * bottomFlywheelDesired);
+                bottomFlywheel.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                topFlywheel.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+            }
+            else {
+                bottomFlywheel.setPower(0);
+                topFlywheel.setPower(0);
+            }
+
+
+
+            if (triggerIntake.isDown){
+                trigger.setPosition(triggerToIntake);
+            } else if (triggerFire>0.5) {
+                trigger.setPosition(triggerToFire);
+            } else {
+                trigger.setPosition(triggerToHold);
+            }
+
+            if (redAllianceButton.clickedDown){
+                alliance=red;
+            }
+            if (blueAllianceButton.clickedDown){
+                alliance=blue;
+            }
+            if (alliance==red){
+                DESIRED_TAG_ID = RED_TARGET_TAG_ID;
+            } else {
+                DESIRED_TAG_ID = BLUE_TARGET_TAG_ID;
+            }
+
+            /**
+             * Set the intake roller to spin if the trigger servo is beyond the hold position on it's way to intake
+             */
+
+        /*if(trigger.getPosition()<=triggerToHold) {
+            intake1.setPosition(0.0);
+        }
+        else  {
+            intake1.setPosition(0.5);
+        }
+
+         */
+
+            telemetryData.addData("Alliance (1 Red) ", alliance);
+            telemetryData.addData("X", teleFollower.getPose().getX());
+            telemetryData.addData("Y", teleFollower.getPose().getY());
+            telemetryData.addData("Heading", teleFollower.getPose().getHeading());
+            telemetryData.addData("Top Flywheel Power", topFlywheel.getPower());
+            telemetryData.addData("Top Flywheel Ratio", topFlywheelRatio);
+            telemetryData.addData("Bottom Flywheel Power", bottomFlywheel.getPower());
+            telemetryData.addData("Trigger Value", triggerValue);
+            telemetryData.addData("Trigger Position", trigger.getPosition());
+            telemetryData.addData("Aim Error", aimError);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
             targetFound = false;
             desiredTag  = null;
 

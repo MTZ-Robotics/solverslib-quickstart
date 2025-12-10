@@ -7,7 +7,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.seattlesolvers.solverslib.util.InterpLUT;
 
-import org.firstinspires.ftc.teamcode.MTZ.mtzButtonBehavior;
+import org.firstinspires.ftc.teamcode.util.mtzButtonBehavior;
 
 @TeleOp(name="Tele Shooter Test", group ="Test")
 @Disabled

@@ -19,6 +19,11 @@ public class Constants {
 
     public static int red = 1;
     public static int blue = -1;
+
+    public static final class LauncherConstants {
+        public static final String LAUNCHER_MOTOR_1_ID = "m5";
+        public static final String LAUNCHER_MOTOR_2_ID = "m6";
+    }
     public static FollowerConstants followerConstants = new FollowerConstants()
             .mass(7.9)
             .forwardZeroPowerAcceleration(-41.95)
@@ -44,7 +49,7 @@ public class Constants {
             .leftFrontMotorDirection(DcMotorSimple.Direction.REVERSE)
             .leftRearMotorDirection(DcMotorSimple.Direction.REVERSE)
             .rightFrontMotorDirection(DcMotorSimple.Direction.FORWARD)
-            .rightRearMotorDirection(DcMotorSimple.Direction.FORWARD)
+            .rightRearMotorDirection(DcMotorSimple.Direction.REVERSE )
             .xVelocity(18.3)
             .yVelocity(18.1);              //48.0213
             //.xVelocity(41.485)

@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.MTZ;
+package org.firstinspires.ftc.teamcode.opmodes;
 
 import static org.firstinspires.ftc.teamcode.pedroPathing.Constants.blue;
 import static org.firstinspires.ftc.teamcode.pedroPathing.Constants.red;
@@ -26,16 +26,17 @@ import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 //import org.firstinspires.ftc.teamcode.pedroPathing.Drawing;
 
 @Autonomous
-public class AutoTestBlue extends OpMode {
+public class AutoTestBlue3 extends OpMode {
     /****************** Modify These Variables ************************/
     public int alliance = blue;
     public int startingPosition = 1;
-    public double topFlywheelRatio = 0.6;
-    public double bottomFlywheelDesired = 0.9;
+    public double topFlywheelRatio = .45;
+    public double bottomFlywheelDesired = 0.8;
     public int fireLoopCountMax = 3;
-    public double chassisSpeedMax = 20;
+    public double chassisSpeedMax = 0.1;
     public double timeToFireTrigger = 1.0;
     public double timeToResetTrigger = 2.5;
+    public double timeToDelayStart = 10;
 
     double triggerToIntake = 0.1;
     double triggerToHold = 0.5;
@@ -52,11 +53,11 @@ public class AutoTestBlue extends OpMode {
     private final Pose redEndPose = new Pose(102, 144-24, Math.toRadians(0));
 
     //private final Pose blueScorePose = new Pose(48, 108, Math.atan(blueTargetY-108/blueTargetX-48));
-    private final Pose blueScorePose = new Pose(43, 144-36, Math.toRadians(135));
+    private final Pose blueScorePose = new Pose(50, 144-50, Math.toRadians(135));
 
     private final Pose blueStartPose1 = new Pose(21.5, 144-14.5, Math.toRadians(135));
     private final Pose blueStartPose2 = new Pose(23, 126, Math.toRadians(135));
-    private final Pose blueInterPose = new Pose(48, 108, Math.toRadians(135));
+    private final Pose blueInterPose = new Pose(30, 144-30, Math.toRadians(135));
     private final Pose blueEndPose = new Pose(28, 144-14, Math.toRadians(180));
 
 
@@ -99,7 +100,7 @@ public class AutoTestBlue extends OpMode {
     private PathChain backUpToShoot, goPark;
 
     public void buildPaths() {
-        /* This is our scorePreload path. We are using a BezierLine, which is a straight line.*/
+        /* This is our scorePreload path. We are using a BezierLine, which is a straight line. */
         if (alliance == blue) {
             if (startingPosition == 2) {
                 startPose = blueStartPose2;
@@ -121,45 +122,37 @@ public class AutoTestBlue extends OpMode {
             scorePose = redScorePose;
         }
 
-        scorePreload = new Path(new BezierLine(startPose, scorePose));
+        scorePreload = new Path(new BezierLine(interPose, scorePose));
         scorePreload.setLinearHeadingInterpolation(startPose.getHeading(), scorePose.getHeading());
-        scorePreload.setVelocityConstraint(chassisSpeedMax);
 
         backUpToShoot = autoBlueFollower.pathBuilder()
                 .addPath(new BezierLine(startPose, interPose))
                 .setLinearHeadingInterpolation(startPose.getHeading(), interPose.getHeading())
-                //.setVelocityConstraint(chassisSpeedMax)
                 .build();
          goPark = autoBlueFollower.pathBuilder()
                 .addPath(new BezierLine(interPose, endPose))
                 .setLinearHeadingInterpolation(interPose.getHeading(), endPose.getHeading())
-                .build();
-
-
-
-
-
+               .build();
     }
 
     public void autonomousPathUpdate() {
         switch (pathState) {
             case 0:
+                if (opmodeTimer.getElapsedTimeSeconds() < timeToDelayStart) {
+                    break;
+                }
                 bottomFlywheel.setPower(bottomFlywheelDesired);
                 topFlywheel.setPower(topFlywheelRatio * bottomFlywheelDesired);
                 actionTimer.resetTimer();
                 setPathState(1);
                 break;
             case 1:
-                autoBlueFollower.followPath(scorePreload);
+                autoBlueFollower.followPath(backUpToShoot, true);
                 setPathState(2);
                 break;
             case 2:
+                autoBlueFollower.followPath(scorePreload, true);
 
-                /* You could check for
-                - Follower State: "if(!autoBlueFollower.isBusy()) {}"
-                - Time: "if(pathTimer.getElapsedTimeSeconds() > 1) {}"
-                - Robot Position: "if(autoBlueFollower.getPose().getX() > 36) {}"
-                */
 
                 if (!autoBlueFollower.isBusy()) {
                     /* Score Preload */

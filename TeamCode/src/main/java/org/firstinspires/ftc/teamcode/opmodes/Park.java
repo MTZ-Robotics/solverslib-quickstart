@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.MTZ;
+package org.firstinspires.ftc.teamcode.opmodes;
 
 import static org.firstinspires.ftc.teamcode.pedroPathing.Constants.blue;
 import static org.firstinspires.ftc.teamcode.pedroPathing.Constants.driveConstants;
@@ -11,7 +11,6 @@ import com.bylazar.field.Style;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.follower.Follower;
-import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.Path;
 import com.pedropathing.paths.PathChain;
@@ -24,17 +23,18 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.seattlesolvers.solverslib.util.TelemetryData;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
+
 //import org.firstinspires.ftc.teamcode.pedroPathing.Drawing;
 
 @Autonomous
-public class Park2 extends OpMode {
+public class Park extends OpMode {
     /****************** Modify These Variables ************************/
-    public int alliance = red;
+    public int alliance = blue;
     public int startingPosition = 1;
     public double topFlywheelRatio = .45;
-    public double bottomFlywheelDesired = 0.76;
+    public double bottomFlywheelDesired = 0.8;
     public int fireLoopCountMax = 3;
-    public double chassisSpeedMax = 20;
+    public double chassisSpeedMax = 0.1;
     public double timeToFireTrigger = 1.0;
     public double timeToResetTrigger = 2.5;
 
@@ -46,26 +46,26 @@ public class Park2 extends OpMode {
     private double redTargetY=140;
     private double blueTargetX=4;
     private double blueTargetY=140;
-    private final Pose redScorePose = new Pose(0,0,0);
-    private final Pose redStartPose1 = new Pose(0,0,0);
-    private final Pose redStartPose2 = new Pose(121, 126, Math.toRadians(45));
-    private final Pose redInterPose = new Pose(3,0,0);
-    private final Pose redEndPose = new Pose(5,0,0);
+    private final Pose redScorePose = new Pose(0, 0, Math.atan(0));
+    private final Pose redStartPose1 = new Pose(0, 0, Math.toRadians(0));
+    private final Pose redStartPose2 = new Pose(0, 0, Math.toRadians(0));
+    private final Pose redInterPose = new Pose(0, 0, Math.toRadians(0));
+    private final Pose redEndPose = new Pose(5, 0, Math.toRadians(0));
 
     //private final Pose blueScorePose = new Pose(48, 108, Math.atan(blueTargetY-108/blueTargetX-48));
-    private final Pose blueScorePose = new Pose(43, 144-36, Math.toRadians(135));
+    private final Pose blueScorePose = new Pose(0, 0, Math.toRadians(0));
 
-    private final Pose blueStartPose1 = new Pose(21.5, 144-14.5, Math.toRadians(135));
-    private final Pose blueStartPose2 = new Pose(23, 126, Math.toRadians(135));
-    private final Pose blueInterPose = new Pose(48, 108, Math.toRadians(135));
-    private final Pose blueEndPose = new Pose(58, 144-24, Math.toRadians(180));
+    private final Pose blueStartPose1 = new Pose(0, 0, Math.toRadians(0));
+    private final Pose blueStartPose2 = new Pose(0, 0, Math.toRadians(0));
+    private final Pose blueInterPose = new Pose(0, 0, Math.toRadians(0));
+    private final Pose blueEndPose = new Pose(5, 0, Math.toRadians(0));
 
 
     /************** End of Highly Modifiable Variables **************/
 
 
-    private Pose startPose = new Pose(23, 0, Math.toRadians(135));
-    private Pose interPose = new Pose(48, -16, Math.toRadians(135));
+    private Pose startPose = new Pose(0, 0, Math.toRadians(180));
+    private Pose interPose = new Pose(5, 0, Math.toRadians(135));
     private Pose endPose = new Pose(58, 24, Math.toRadians(90));
     private Pose scorePose = new Pose(48, 108, Math.toRadians(135));
 
@@ -80,7 +80,7 @@ public class Park2 extends OpMode {
 
     TelemetryData telemetryData = new TelemetryData(telemetry);
 
-    public static Follower autoRedFollower;
+    public static Follower autoFollower;
 
     private Timer pathTimer, actionTimer, opmodeTimer;
 
@@ -122,19 +122,19 @@ public class Park2 extends OpMode {
             scorePose = redScorePose;
         }
 
-        scorePreload = new Path(new BezierLine(startPose, scorePose));
+       /* scorePreload = new Path(new BezierLine(startPose, scorePose));
         scorePreload.setLinearHeadingInterpolation(startPose.getHeading(), scorePose.getHeading());
-        scorePreload.setVelocityConstraint(chassisSpeedMax);
 
-        backUpToShoot = autoRedFollower.pathBuilder()
+        backUpToShoot = autoFollower.pathBuilder()
                 .addPath(new BezierLine(startPose, interPose))
                 .setLinearHeadingInterpolation(startPose.getHeading(), interPose.getHeading())
-                .setVelocityConstraint(chassisSpeedMax)
                 .build();
-         goPark = autoRedFollower.pathBuilder()
+         goPark = autoFollower.pathBuilder()
                 .addPath(new BezierLine(interPose, endPose))
                 .setLinearHeadingInterpolation(interPose.getHeading(), endPose.getHeading())
                .build();
+
+        */
     }
 
     public void autonomousPathUpdate() {
@@ -142,32 +142,35 @@ public class Park2 extends OpMode {
             case 0:
                 bottomFlywheel.setPower(bottomFlywheelDesired);
                 topFlywheel.setPower(topFlywheelRatio * bottomFlywheelDesired);
-                //actionTimer.resetTimer();
+                actionTimer.resetTimer();
                 setPathState(1);
                 break;
             case 1:
-                autoRedFollower.followPath(scorePreload);
+                autoFollower.followPath(scorePreload);
                 setPathState(2);
                 break;
             case 2:
 
                 /* You could check for
-                - Follower State: "if(!autoRedFollower.isBusy()) {}"
+                - Follower State: "if(!autoFollower.isBusy()) {}"
                 - Time: "if(pathTimer.getElapsedTimeSeconds() > 1) {}"
-                - Robot Position: "if(autoRedFollower.getPose().getX() > 36) {}"
+                - Robot Position: "if(autoFollower.getPose().getX() > 36) {}"
                 */
-
-                if (!autoRedFollower.isBusy()) {
+                setPathState(3);
+                break;
+                /*
+                if (!autoFollower.isBusy()) {
                     /* Score Preload */
 
-                    /* Since this is a pathChain, we can have Pedro hold the end point while we are grabbing the sample*/
+                    /* Since this is a pathChain, we can have Pedro hold the end point while we are grabbing the sample */
 
                     /***
                      * Fire Trigger 3x
-                     *****/
+                     */
 
-                    //autoRedFollower.followPath(grabPickup1,true);
+                    //autoFollower.followPath(grabPickup1,true);
                     //if 1st time through firing loop, set the action timer
+                    /*
                     switch (currentTriggerState) {
                         case readyToFire:
                             if (fireLoopCount==1 && actionTimer.getElapsedTimeSeconds()<=5){
@@ -198,19 +201,23 @@ public class Park2 extends OpMode {
                                 }
                                 break;
 
+
+
                     }
                 }
-                break;
 
+
+                break;
+                */
             case 3:
                 /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the pickup1Pose's position */
-                if (!autoRedFollower.isBusy()) {
+                if (!autoFollower.isBusy()) {
 
                     bottomFlywheel.setPower(0);
                     topFlywheel.setPower(0);
 
                     /* Since this is a pathChain, we can have Pedro hold the end point while we are scoring the sample */
-                    autoRedFollower.followPath(goPark, true);
+                    autoFollower.followPath(goPark, true);
                     setPathState(4);
                 }
                 break;
@@ -233,16 +240,14 @@ public class Park2 extends OpMode {
         public void loop () {
 
             // These loop the movements of the robot, these must be called continuously in order to work
-
-            driveConstants.maxPower(chassisSpeedMax);
-            autoRedFollower.update();
+            autoFollower.update();
             autonomousPathUpdate();
 
             // Feedback to Driver Hub for debugging
             telemetry.addData("path state", pathState);
-            telemetry.addData("x", autoRedFollower.getPose().getX());
-            telemetry.addData("y", autoRedFollower.getPose().getY());
-            telemetry.addData("heading", autoRedFollower.getPose().getHeading());
+            telemetry.addData("x", autoFollower.getPose().getX());
+            telemetry.addData("y", autoFollower.getPose().getY());
+            telemetry.addData("heading", autoFollower.getPose().getHeading());
             telemetry.update();
         }
 
@@ -254,26 +259,27 @@ public class Park2 extends OpMode {
             opmodeTimer.resetTimer();
 
 
-            autoRedFollower = Constants.createFollower(hardwareMap);
+            driveConstants.maxPower(chassisSpeedMax);
+            autoFollower = Constants.createFollower(hardwareMap);
             buildPaths();
 
 
             if (alliance == blue) {
                 if (startingPosition == 2) {
-                    autoRedFollower.setStartingPose(blueStartPose2);
+                    autoFollower.setStartingPose(blueStartPose2);
                 } else {
-                    autoRedFollower.setStartingPose(blueStartPose1);
+                    autoFollower.setStartingPose(blueStartPose1);
                 }
             } else if (alliance == red) {
                 if (startingPosition == 2) {
-                    autoRedFollower.setStartingPose(redStartPose2);
+                    autoFollower.setStartingPose(redStartPose2);
                 } else {
-                    autoRedFollower.setStartingPose(redStartPose1);
+                    autoFollower.setStartingPose(redStartPose1);
                 }
             }
 
 
-            poseHistory = autoRedFollower.getPoseHistory();
+            poseHistory = autoFollower.getPoseHistory();
 
             telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
 
@@ -296,7 +302,7 @@ public class Park2 extends OpMode {
             telemetryData.addData("This will run in a roughly triangular shape, starting on the bottom-middle point.", getRuntime());
             telemetryData.addData("So, make sure you have enough space to the left, front, and right to run the OpMode.", getRuntime());
             telemetryData.update();
-            //autoRedFollower.update();
+            //autoFollower.update();
             //drawCurrent();
 
         }
@@ -333,16 +339,16 @@ public class Park2 extends OpMode {
              * This draws everything that will be used in the Follower's telemetryDebug() method. This takes
              * a Follower as an input, so an instance of the DashbaordDrawingHandler class is not needed.
              *
-             * @param autoRedFollower Pedro Follower instance.
+             * @param follower Pedro Follower instance.
              */
-        /*public void drawDebug(Follower autoRedFollower) {
-            if (autoRedFollower.getCurrentPath() != null) {
-                drawPath(autoRedFollower.getCurrentPath(), robotLook);
-                Pose closestPoint = autoRedFollower.getPointFromPath(autoRedFollower.getCurrentPath().getClosestPointTValue());
-                drawRobot(new Pose(closestPoint.getX(), closestPoint.getY(), autoRedFollower.getCurrentPath().getHeadingGoal(autoRedFollower.getCurrentPath().getClosestPointTValue())), robotLook);
+        /*public void drawDebug(Follower autoFollower) {
+            if (autoFollower.getCurrentPath() != null) {
+                drawPath(autoFollower.getCurrentPath(), robotLook);
+                Pose closestPoint = autoFollower.getPointFromPath(autoFollower.getCurrentPath().getClosestPointTValue());
+                drawRobot(new Pose(closestPoint.getX(), closestPoint.getY(), autoFollower.getCurrentPath().getHeadingGoal(autoFollower.getCurrentPath().getClosestPointTValue())), robotLook);
             }
-            drawPoseHistory(autoRedFollower.getPoseHistory(), historyLook);
-            drawRobot(autoRedFollower.getPose(), historyLook);
+            drawPoseHistory(autoFollower.getPoseHistory(), historyLook);
+            drawRobot(autoFollower.getPose(), historyLook);
 
             sendPacket();
         }
@@ -476,7 +482,7 @@ public class Park2 extends OpMode {
     }
 
     public void drawCurrent() {
-        Drawing.drawRobot(autoRedFollower.getPose());
+        Drawing.drawRobot(autoFollower.getPose());
     }*/
 
 }
