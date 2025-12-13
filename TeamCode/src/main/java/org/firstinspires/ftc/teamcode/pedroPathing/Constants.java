@@ -34,7 +34,8 @@ public class Constants {
             .centripetalScaling(0.0005)
             .translationalPIDFCoefficients(new PIDFCoefficients(0.1, 0, 0.01, 0))
             .headingPIDFCoefficients(new PIDFCoefficients(2, 0, 0.1, 0))
-            .drivePIDFCoefficients(new FilteredPIDFCoefficients(0.1, 0, 0, 0.6, 0));
+            .drivePIDFCoefficients(new FilteredPIDFCoefficients(0.1, 0, 0, 0.6, 0))
+            .turnHeadingErrorThreshold(0.001); //Default is 0.01
 
     public static MecanumConstants driveConstants = new MecanumConstants()
             .maxPower(1.0)
@@ -77,6 +78,10 @@ public class Constants {
                 .pathConstraints(pathConstraints)
                 .build();
     }
+
+    /***      Path Points      ****/
+
+
 }
 
 

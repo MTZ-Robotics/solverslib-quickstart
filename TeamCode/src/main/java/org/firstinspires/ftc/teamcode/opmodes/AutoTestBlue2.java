@@ -30,12 +30,13 @@ public class AutoTestBlue2 extends OpMode {
     /****************** Modify These Variables ************************/
     public int alliance = blue;
     public int startingPosition = 1;
-    public double topFlywheelRatio = 0.7;
-    public double bottomFlywheelDesired = 0.9;
+    public double topFlywheelDesired = 0.75;
+    public double bottomFlywheelDesired = 0.85;
     public int fireLoopCountMax = 3;
     public double chassisSpeedMax = 0.1;
     public double timeToFireTrigger = 1.0;
     public double timeToResetTrigger = 2.5;
+    public double timeToDelayStart = 0;
 
     double triggerToIntake = 0.1;
     double triggerToHold = 0.4;
@@ -45,27 +46,30 @@ public class AutoTestBlue2 extends OpMode {
     private double redTargetY=140;
     private double blueTargetX=4;
     private double blueTargetY=140;
-    private final Pose redScorePose = new Pose(144-55, 14, Math.toRadians(45));
+    private final Pose redScorePose = new Pose(144-55, 9, Math.toRadians(45));
     private final Pose redStartPose1 = new Pose(144-21.5, 144-14.5, Math.toRadians(45));
     private final Pose redStartPose2 = new Pose(121, 126, Math.toRadians(45));
     private final Pose redInterPose = new Pose(96, 108, Math.toRadians(45));
     private final Pose redEndPose = new Pose(102, 144-24, Math.toRadians(0));
+    private final Pose redLoadPose = new Pose(144-9, 9, Math.toRadians(180));
 
-    private final Pose blueScorePose = new Pose(50, 16, Math.atan((blueTargetY-16)/(blueTargetX-50)));
-    //private final Pose blueScorePose = new Pose(50, 16, Math.toRadians(125));
+    //private final Pose blueScorePose = new Pose(50, 16, Math.toRadians(135)); //Math.atan((blueTargetY-16)/(blueTargetX-50))
+    private final Pose blueScorePose = new Pose(50, 12, Math.toRadians(110));
 
-    private final Pose blueStartPose1 = new Pose(55, 14, Math.toRadians(90));
+    private final Pose blueStartPose1 = new Pose(48, 9, Math.toRadians(90));
     private final Pose blueStartPose2 = new Pose(23, 126, Math.toRadians(135));
     private final Pose blueInterPose = new Pose(55, 14, Math.toRadians(90));
     private final Pose blueEndPose = new Pose(50, 36, Math.toRadians(0));
 
+    private final Pose blueLoadPose = new Pose(9, 9, Math.toRadians(0));
 
     /************** End of Highly Modifiable Variables **************/
 
 
     private Pose startPose = new Pose(23, 0, Math.toRadians(135));
     private Pose interPose = new Pose(48, -16, Math.toRadians(135));
-    private Pose endPose = new Pose(58, 24, Math.toRadians(90));
+    private Pose endPose = new Pose(58, 24, Math.toRadians(0));
+    private Pose loadPose = new Pose(9, 9, Math.toRadians(0));
     private Pose scorePose = new Pose(48, 108, Math.toRadians(135));
 
 
@@ -109,6 +113,7 @@ public class AutoTestBlue2 extends OpMode {
             interPose = blueInterPose;
             endPose = blueEndPose;
             scorePose = blueScorePose;
+            loadPose = blueLoadPose;
         }
         if (alliance == red) {
             if (startingPosition == 2) {
@@ -119,10 +124,11 @@ public class AutoTestBlue2 extends OpMode {
             interPose = redInterPose;
             endPose = redEndPose;
             scorePose = redScorePose;
+            loadPose = redLoadPose;
         }
 
-        scorePreload = new Path(new BezierLine(startPose, scorePose));
-        scorePreload.setLinearHeadingInterpolation(startPose.getHeading(), scorePose.getHeading());
+        scorePreload = new Path(new BezierLine(interPose, scorePose));
+        scorePreload.setLinearHeadingInterpolation(interPose.getHeading(), scorePose.getHeading());
 
         backUpToShoot = autoBlueFollower.pathBuilder()
                 .addPath(new BezierLine(startPose, interPose))
@@ -137,8 +143,11 @@ public class AutoTestBlue2 extends OpMode {
     public void autonomousPathUpdate() {
         switch (pathState) {
             case 0:
+                if (opmodeTimer.getElapsedTimeSeconds() < timeToDelayStart) {
+                    break;
+                }
                 bottomFlywheel.setPower(bottomFlywheelDesired);
-                topFlywheel.setPower(topFlywheelRatio * bottomFlywheelDesired);
+                topFlywheel.setPower(topFlywheelDesired);
                 actionTimer.resetTimer();
                 setPathState(1);
                 break;

@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.opmodes;
+package org.firstinspires.ftc.teamcode.archive;
 
 
 import static org.firstinspires.ftc.teamcode.pedroPathing.Constants.blue;
@@ -7,6 +7,7 @@ import static org.firstinspires.ftc.teamcode.pedroPathing.Constants.red;
 
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -23,64 +24,20 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Position;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
-import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.util.mtzButtonBehavior;
+import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-
-
-
+@Disabled
 @TeleOp
-public class Tele_Shooting_W_Intake_AutoFlywheelSpeed extends CommandOpMode {
+public class Small_Triangle_Shooting_W_Intake extends CommandOpMode {
     public int alliance = red;
-    /*********
-     * Modified Left Bumper on 2 to not strafe or distance, but to change flywheel speed
-     */
-
-    /*****
-     Flywheel Calibration Notes
-     Far Triangle
-     X -
-     Y -
-     Top Flywheel - .75
-     Bottom Flywheel - .85
-
-     Inside Point of Close Triangle
-     X -
-     Y -
-     Top Flywheel - .65
-     Bottom Flywheel - .85
-
-     Middle of Close Triangle
-     X -
-     Y -
-     Top Flywheel - .65
-     Bottom Flywheel - .80
-     */
-
-    /*   Need to fix interpolation tables for flywheel auto adjusting*/
-    final double[] DISTANCE_CAL = {115, 72, 35}; //Need to fix distances per X and Y of calibrations
-    final double[] TOP_FLYWHEEL_CAL = {.75, .65, .65};
-    final double[] BOTTOM_FLYWHEEL_CAL = {.85, .85, .8};
-    InterpLUT topFlywheelLUT;
-
-
-    InterpLUT bottomFlywheelLUT;
-
-
-
-
-
-
-
-
-
-
-    final double DESIRED_DISTANCE = 72.0; //  this is how close the camera should get to the target (inches)
+    // Adjust these numbers to suit your robot.
+    final double DESIRED_DISTANCE = 115.0; //  this is how close the camera should get to the target (inches)
 
     //  Set the GAIN constants to control the relationship between the measured position error, and how much power is
     //  applied to the drive motors to correct the error.
@@ -114,7 +71,7 @@ public class Tele_Shooting_W_Intake_AutoFlywheelSpeed extends CommandOpMode {
     boolean runIntake = false;
     double intakeDesired = .75;
     double topFlywheelDesired = .75;
-    double bottomFlywheelDesired = 0.85;
+    double bottomFlywheelDesired = 0.9;
     double triggerToIntake = 0.1;
     double triggerToHold = 0.45;
     double triggerToFire = 0.9;
@@ -203,13 +160,6 @@ public class Tele_Shooting_W_Intake_AutoFlywheelSpeed extends CommandOpMode {
         //teleFollower.setTeleOpDrive(-gamepad1.left_stick_y, -gamepad1.left_stick_x, -gamepad1.right_stick_x, false);
 
 
-        topFlywheelLUT .add(115, 0.75);
-        topFlywheelLUT.add(72, .65);
-        topFlywheelLUT.add(35, .65);
-
-        topFlywheelLUT.createLUT();
-
-        
 
 
 
@@ -428,23 +378,59 @@ public class Tele_Shooting_W_Intake_AutoFlywheelSpeed extends CommandOpMode {
             }
 
             // If Left Bumper is being pressed, AND we have found the desired target, Drive to target Automatically .
-            if (gamepad2.left_bumper && targetFound) {
+            if (gamepad1.left_bumper && targetFound) {
 
-                 double headingError = desiredTag.ftcPose.bearing;
+                // Determine heading, range and Yaw (tag image rotation) error so we can use them to control the robot automatically.
+                double  rangeError      = (desiredTag.ftcPose.range - DESIRED_DISTANCE);
+                double  headingError    = desiredTag.ftcPose.bearing;
+                double  yawError        = desiredTag.ftcPose.yaw;
 
+                // Use the speed and turn "gains" to calculate how we want the robot to move.
+                drive  = Range.clip(rangeError * SPEED_GAIN, -MAX_AUTO_SPEED, MAX_AUTO_SPEED);
+                turn   = Range.clip(headingError * TURN_GAIN, -MAX_AUTO_TURN, MAX_AUTO_TURN) ;
+                strafe = Range.clip(-yawError * STRAFE_GAIN, -MAX_AUTO_STRAFE, MAX_AUTO_STRAFE);
+
+                telemetry.addData("Auto","Drive %5.2f, Strafe %5.2f, Turn %5.2f ", drive, strafe, turn);
+            } else if (gamepad1.b && targetFound) {
+
+                // Determine heading, range and Yaw (tag image rotation) error so we can use them to control the robot automatically.
+                double rangeError = (desiredTag.ftcPose.range - DESIRED_DISTANCE + 90);
+                double headingError = desiredTag.ftcPose.bearing;
+                double yawError = desiredTag.ftcPose.yaw;
+
+                // Use the speed and turn "gains" to calculate how we want the robot to move.
+                drive = Range.clip(rangeError * SPEED_GAIN, -MAX_AUTO_SPEED, MAX_AUTO_SPEED);
                 turn = Range.clip(headingError * TURN_GAIN, -MAX_AUTO_TURN, MAX_AUTO_TURN);
-
-                drive = -gamepad1.left_stick_y / 2.0;  // Reduce drive rate to 50%.
-                strafe = -gamepad1.left_stick_x / 2.0;  // Reduce strafe rate to 50%.
-
-/*
-                topFlywheelDesired = topFlywheelLUT.getClosest(desiredTag.ftcPose.range);
-                bottomFlywheelDesired = bottomFlywheelLUT.getClosest(desiredTag.ftcPose.range);
-
- */
+                strafe = Range.clip(-yawError * STRAFE_GAIN, -MAX_AUTO_STRAFE, MAX_AUTO_STRAFE);
 
                 telemetry.addData("Auto", "Drive %5.2f, Strafe %5.2f, Turn %5.2f ", drive, strafe, turn);
-            } else if (gamepad2.right_bumper && targetFound) {
+            } else if (gamepad1.y && targetFound) {
+
+                // Determine heading, range and Yaw (tag image rotation) error so we can use them to control the robot automatically.
+                double rangeError = (desiredTag.ftcPose.range - DESIRED_DISTANCE + 75);
+                double headingError = desiredTag.ftcPose.bearing;
+                double yawError = desiredTag.ftcPose.yaw;
+
+                // Use the speed and turn "gains" to calculate how we want the robot to move.
+                drive = Range.clip(rangeError * SPEED_GAIN, -MAX_AUTO_SPEED, MAX_AUTO_SPEED);
+                turn = Range.clip(headingError * TURN_GAIN, -MAX_AUTO_TURN, MAX_AUTO_TURN);
+                strafe = Range.clip(-yawError * STRAFE_GAIN, -MAX_AUTO_STRAFE, MAX_AUTO_STRAFE);
+
+                telemetry.addData("Auto", "Drive %5.2f, Strafe %5.2f, Turn %5.2f ", drive, strafe, turn);
+            } else if (gamepad1.x && targetFound) {
+
+                // Determine heading, range and Yaw (tag image rotation) error so we can use them to control the robot automatically.
+                double rangeError = (desiredTag.ftcPose.range - DESIRED_DISTANCE);
+                double headingError = desiredTag.ftcPose.bearing;
+                double yawError = desiredTag.ftcPose.yaw;
+
+                // Use the speed and turn "gains" to calculate how we want the robot to move.
+                drive = Range.clip(rangeError * SPEED_GAIN, -MAX_AUTO_SPEED, MAX_AUTO_SPEED);
+                turn = Range.clip(headingError * TURN_GAIN, -MAX_AUTO_TURN, MAX_AUTO_TURN);
+                strafe = Range.clip(-yawError * STRAFE_GAIN, -MAX_AUTO_STRAFE, MAX_AUTO_STRAFE);
+
+                telemetry.addData("Auto", "Drive %5.2f, Strafe %5.2f, Turn %5.2f ", drive, strafe, turn);
+            } else if (gamepad1.right_bumper && targetFound) {
 
                 // Determine heading, range and Yaw (tag image rotation) error so we can use them to control the robot automatically.
                 double rangeError = (desiredTag.ftcPose.range - DESIRED_DISTANCE);
@@ -468,7 +454,7 @@ public class Tele_Shooting_W_Intake_AutoFlywheelSpeed extends CommandOpMode {
             telemetry.update();
 
             //teleFollower.setTeleOpDrive(-gamepad1.left_stick_y*chassisSpeedRatio, -gamepad1.left_stick_x*chassisSpeedRatio, -gamepad1.right_stick_x*chassisSpeedRatio, false);
-            teleFollower.setTeleOpDrive(drive, strafe, turn, false);
+            teleFollower.setTeleOpDrive(drive, strafe, turn, gamepad1.left_bumper);
             teleFollower.update();
             // Apply desired axes motions to the drivetrain.
             sleep(10);

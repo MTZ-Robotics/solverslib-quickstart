@@ -1,10 +1,11 @@
-package org.firstinspires.ftc.teamcode.opmodes;
+package org.firstinspires.ftc.teamcode.archive;
 
 
 import static org.firstinspires.ftc.teamcode.pedroPathing.Constants.driveConstants;
 
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -14,7 +15,7 @@ import com.seattlesolvers.solverslib.util.TelemetryData;
 
 import org.firstinspires.ftc.teamcode.util.mtzButtonBehavior;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
-
+@Disabled
 @TeleOp
 public class MTZPedroTeleOp extends CommandOpMode {
     Follower teleFollower;

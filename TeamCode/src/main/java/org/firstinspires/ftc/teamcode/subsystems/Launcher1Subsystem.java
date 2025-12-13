@@ -13,6 +13,8 @@ public class Launcher1Subsystem extends SubsystemBase {
     private static final double PUSHER_RETRACTED_POSITION = 0.45;
     private static final double PUSHER_PUSHED_POSITION = 0.9;
 
+
+
     public Launcher1Subsystem(HardwareMap hardwareMap) {
         m_flywheelMotor = hardwareMap.get(DcMotorEx.class, "m5");
         m_pusherServo = hardwareMap.get(Servo.class, "s12");
@@ -22,6 +24,8 @@ public class Launcher1Subsystem extends SubsystemBase {
         // May need to set motor direction, zero power behavior, etc.
         m_flywheelMotor.setDirection(DcMotorEx.Direction.FORWARD);
         m_pusherServo.setPosition(PUSHER_RETRACTED_POSITION);
+
+
     }
 
     // Method to spin the flywheel at a specific power (0.0 to 1.0)

@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.opmodes;
+package org.firstinspires.ftc.teamcode.archive;
 
 import static org.firstinspires.ftc.teamcode.pedroPathing.Constants.blue;
 import static org.firstinspires.ftc.teamcode.pedroPathing.Constants.red;
@@ -26,46 +26,49 @@ import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 //import org.firstinspires.ftc.teamcode.pedroPathing.Drawing;
 
 @Autonomous
-public class AutoTestBlue extends OpMode {
+public class AutoTestBlue2Reload extends OpMode {
     /****************** Modify These Variables ************************/
     public int alliance = blue;
     public int startingPosition = 1;
-    public double topFlywheelRatio = 0.6;
-    public double bottomFlywheelDesired = 0.9;
+    public double topFlywheelDesired = 0.75;
+    public double bottomFlywheelDesired = 0.85;
     public int fireLoopCountMax = 3;
-    public double chassisSpeedMax = 20;
+    public double chassisSpeedMax = 0.1;
     public double timeToFireTrigger = 1.0;
     public double timeToResetTrigger = 2.5;
 
     double triggerToIntake = 0.1;
-    double triggerToHold = 0.5;
+    double triggerToHold = 0.4;
     double triggerToFire = 0.9;
 
     private double redTargetX=140;
     private double redTargetY=140;
     private double blueTargetX=4;
     private double blueTargetY=140;
-    private final Pose redScorePose = new Pose(144-43, 144-36, Math.toRadians(45));
+    private final Pose redScorePose = new Pose(144-55, 9, Math.toRadians(45));
     private final Pose redStartPose1 = new Pose(144-21.5, 144-14.5, Math.toRadians(45));
     private final Pose redStartPose2 = new Pose(121, 126, Math.toRadians(45));
     private final Pose redInterPose = new Pose(96, 108, Math.toRadians(45));
     private final Pose redEndPose = new Pose(102, 144-24, Math.toRadians(0));
+    private final Pose redLoadPose = new Pose(144-9, 9, Math.toRadians(180));
 
-    //private final Pose blueScorePose = new Pose(48, 108, Math.atan(blueTargetY-108/blueTargetX-48));
-    private final Pose blueScorePose = new Pose(43, 144-36, Math.toRadians(135));
+    //private final Pose blueScorePose = new Pose(50, 16, Math.toRadians(135)); //Math.atan((blueTargetY-16)/(blueTargetX-50))
+    private final Pose blueScorePose = new Pose(50, 12, Math.toRadians(110));
 
-    private final Pose blueStartPose1 = new Pose(21.5, 144-14.5, Math.toRadians(135));
+    private final Pose blueStartPose1 = new Pose(48, 9, Math.toRadians(90));
     private final Pose blueStartPose2 = new Pose(23, 126, Math.toRadians(135));
-    private final Pose blueInterPose = new Pose(48, 108, Math.toRadians(135));
-    private final Pose blueEndPose = new Pose(28, 144-14, Math.toRadians(180));
+    private final Pose blueInterPose = new Pose(55, 14, Math.toRadians(90));
+    private final Pose blueEndPose = new Pose(50, 36, Math.toRadians(0));
 
+    private final Pose blueLoadPose = new Pose(9, 9, Math.toRadians(0));
 
     /************** End of Highly Modifiable Variables **************/
 
 
     private Pose startPose = new Pose(23, 0, Math.toRadians(135));
     private Pose interPose = new Pose(48, -16, Math.toRadians(135));
-    private Pose endPose = new Pose(58, 24, Math.toRadians(90));
+    private Pose endPose = new Pose(58, 24, Math.toRadians(0));
+    private Pose loadPose = new Pose(9, 9, Math.toRadians(0));
     private Pose scorePose = new Pose(48, 108, Math.toRadians(135));
 
 
@@ -96,10 +99,10 @@ public class AutoTestBlue extends OpMode {
 
 
     private Path scorePreload;
-    private PathChain backUpToShoot, goPark;
+    private PathChain backUpToShoot, goPark, launchToReload, reloadToLaunch;
 
     public void buildPaths() {
-        /* This is our scorePreload path. We are using a BezierLine, which is a straight line.*/
+        /* This is our scorePreload path. We are using a BezierLine, which is a straight line. */
         if (alliance == blue) {
             if (startingPosition == 2) {
                 startPose = blueStartPose2;
@@ -109,6 +112,7 @@ public class AutoTestBlue extends OpMode {
             interPose = blueInterPose;
             endPose = blueEndPose;
             scorePose = blueScorePose;
+            loadPose = blueLoadPose;
         }
         if (alliance == red) {
             if (startingPosition == 2) {
@@ -119,33 +123,35 @@ public class AutoTestBlue extends OpMode {
             interPose = redInterPose;
             endPose = redEndPose;
             scorePose = redScorePose;
+            loadPose = redLoadPose;
         }
 
-        scorePreload = new Path(new BezierLine(startPose, scorePose));
-        scorePreload.setLinearHeadingInterpolation(startPose.getHeading(), scorePose.getHeading());
-        scorePreload.setVelocityConstraint(chassisSpeedMax);
+        scorePreload = new Path(new BezierLine(interPose, scorePose));
+        scorePreload.setLinearHeadingInterpolation(interPose.getHeading(), scorePose.getHeading());
 
         backUpToShoot = autoBlueFollower.pathBuilder()
                 .addPath(new BezierLine(startPose, interPose))
                 .setLinearHeadingInterpolation(startPose.getHeading(), interPose.getHeading())
-                //.setVelocityConstraint(chassisSpeedMax)
+                .build();
+        launchToReload = autoBlueFollower.pathBuilder()
+                .addPath(new BezierLine(scorePose, loadPose))
+                .setLinearHeadingInterpolation(scorePose.getHeading(), loadPose.getHeading())
+                .build();
+        reloadToLaunch = autoBlueFollower.pathBuilder()
+                .addPath(new BezierLine(loadPose, scorePose))
+                .setLinearHeadingInterpolation(loadPose.getHeading(), scorePose.getHeading())
                 .build();
          goPark = autoBlueFollower.pathBuilder()
                 .addPath(new BezierLine(interPose, endPose))
                 .setLinearHeadingInterpolation(interPose.getHeading(), endPose.getHeading())
-                .build();
-
-
-
-
-
+               .build();
     }
 
     public void autonomousPathUpdate() {
         switch (pathState) {
             case 0:
                 bottomFlywheel.setPower(bottomFlywheelDesired);
-                topFlywheel.setPower(topFlywheelRatio * bottomFlywheelDesired);
+                topFlywheel.setPower(topFlywheelDesired);
                 actionTimer.resetTimer();
                 setPathState(1);
                 break;
@@ -174,7 +180,7 @@ public class AutoTestBlue extends OpMode {
                     //if 1st time through firing loop, set the action timer
                     switch (currentTriggerState) {
                         case readyToFire:
-                            if (fireLoopCount==1 && actionTimer.getElapsedTimeSeconds()<=5){
+                            if (fireLoopCount==1 && actionTimer.getElapsedTimeSeconds()<=3){ //give flywheel time to spin up
                                 break;
                             }
                             trigger.setPosition(triggerToFire);
@@ -299,8 +305,7 @@ public class AutoTestBlue extends OpMode {
 
         @Override
         public void init_loop () {
-            telemetryData.addData("This will run in a roughly triangular shape, starting on the bottom-middle point.", getRuntime());
-            telemetryData.addData("So, make sure you have enough space to the left, front, and right to run the OpMode.", getRuntime());
+            telemetryData.addData("This will reload after firing", getRuntime());
             telemetryData.update();
             //autoBlueFollower.update();
             //drawCurrent();

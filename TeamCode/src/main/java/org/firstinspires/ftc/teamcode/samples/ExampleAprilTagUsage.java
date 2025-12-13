@@ -11,7 +11,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
-//@Disabled
+@Disabled
 @TeleOp
 public class ExampleAprilTagUsage extends OpMode {
     private Limelight3A camera; //any camera here

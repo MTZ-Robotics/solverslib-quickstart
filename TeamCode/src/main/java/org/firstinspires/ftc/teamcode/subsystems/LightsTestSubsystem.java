@@ -16,7 +16,7 @@ public class LightsTestSubsystem extends SubsystemBase {
     //@Override
     public void init(HardwareMap hardwareMap) {
         // Initialize hardware
-        blinkinLedDriver = hardwareMap.get(RevBlinkinLedDriver.class, "blinkin");
+        blinkinLedDriver = hardwareMap.get(RevBlinkinLedDriver.class, "s7");
         // Set an initial pattern or color if needed
         blinkinLedDriver.setPattern(RevBlinkinLedDriver.BlinkinPattern.BEATS_PER_MINUTE_LAVA_PALETTE);
     }
