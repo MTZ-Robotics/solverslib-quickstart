@@ -253,8 +253,8 @@ public class A_Tele_Blue extends CommandOpMode {
 
             //triggerValue = triggerServoLUT.get(gamepad1.right_trigger);
             bottomFlywheelFaster.update(gamepad2.dpad_up);
-            topFlywheelFaster.update(gamepad2.dpad_left);
-            topFlywheelSlower.update(gamepad2.dpad_right);
+            topFlywheelFaster.update(gamepad2.dpad_right);
+            topFlywheelSlower.update(gamepad2.dpad_left);
             bottomFlywheelSlower.update(gamepad2.dpad_down);
             aimBumper.update(gamepad2.left_bumper);
             intakeOff.update(gamepad2.y);

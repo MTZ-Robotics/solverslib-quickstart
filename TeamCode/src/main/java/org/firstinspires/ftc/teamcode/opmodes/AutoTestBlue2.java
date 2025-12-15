@@ -36,7 +36,7 @@ public class AutoTestBlue2 extends OpMode {
     public double chassisSpeedMax = 0.1;
     public double timeToFireTrigger = 1.0;
     public double timeToResetTrigger = 2.5;
-    public double timeToDelayStart = 0;
+    public double timeToDelayStart = 25;
 
     double triggerToIntake = 0.1;
     double triggerToHold = 0.4;
@@ -54,14 +54,14 @@ public class AutoTestBlue2 extends OpMode {
     private final Pose redLoadPose = new Pose(144-9, 9, Math.toRadians(180));
 
     //private final Pose blueScorePose = new Pose(50, 16, Math.toRadians(135)); //Math.atan((blueTargetY-16)/(blueTargetX-50))
-    private final Pose blueScorePose = new Pose(50, 12, Math.toRadians(110));
+    private final Pose blueScorePose = new Pose(10, 9, Math.toRadians(180));
 
-    private final Pose blueStartPose1 = new Pose(48, 9, Math.toRadians(90));
-    private final Pose blueStartPose2 = new Pose(23, 126, Math.toRadians(135));
-    private final Pose blueInterPose = new Pose(55, 14, Math.toRadians(90));
-    private final Pose blueEndPose = new Pose(50, 36, Math.toRadians(0));
+    private final Pose blueStartPose1 = new Pose(48, 9, Math.toRadians(180));
+    private final Pose blueStartPose2 = new Pose(48, 9, Math.toRadians(180));
+    private final Pose blueInterPose = new Pose(10, 9, Math.toRadians(180));
+    private final Pose blueEndPose = new Pose(10, 9, Math.toRadians(180));
 
-    private final Pose blueLoadPose = new Pose(9, 9, Math.toRadians(0));
+    private final Pose blueLoadPose = new Pose(9, 9, Math.toRadians(180));
 
     /************** End of Highly Modifiable Variables **************/
 

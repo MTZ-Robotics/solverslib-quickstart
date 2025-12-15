@@ -37,7 +37,7 @@ public class AutoTestRed2 extends OpMode {
     public double chassisSpeedMax = 0.1;
     public double timeToFireTrigger = 1.0;
     public double timeToResetTrigger = 2.5;
-    public double timeToDelayStart = 0;
+    public double timeToDelayStart = 25;
 
     double triggerToIntake = 0.1;
     double triggerToHold = 0.4;
@@ -47,12 +47,12 @@ public class AutoTestRed2 extends OpMode {
     private double redTargetY=140;
     private double blueTargetX=4;
     private double blueTargetY=140;
-    private final Pose redScorePose = new Pose(144-50, 16, Math.atan((redTargetY-16)/(redTargetX-(144-50))));
+    private final Pose redScorePose = new Pose(144-10, 9, Math.toRadians(0)); //Math.atan((redTargetY-16)/(redTargetX-(144-50))));
     //private final Pose redScorePose = new Pose(144-50, 16, Math.toRadians(60));
-    private final Pose redStartPose1 = new Pose(144-48, 9, Math.toRadians(90));
-    private final Pose redStartPose2 = new Pose(121, 126, Math.toRadians(45));
-    private final Pose redInterPose = new Pose(144-55, 14, Math.toRadians(90));
-    private final Pose redEndPose = new Pose(144-50, 36, Math.toRadians(0));
+    private final Pose redStartPose1 = new Pose(144-48, 9, Math.toRadians(0));
+    private final Pose redStartPose2 = new Pose(144-48, 9, Math.toRadians(0));
+    private final Pose redInterPose = new Pose(144-10, 9, Math.toRadians(0));
+    private final Pose redEndPose = new Pose(144-10, 9, Math.toRadians(0));
 
     //private final Pose blueScorePose = new Pose(48, 108, Math.atan(blueTargetY-108/blueTargetX-48));
     private final Pose blueScorePose = new Pose(43, 144-36, Math.toRadians(135));
