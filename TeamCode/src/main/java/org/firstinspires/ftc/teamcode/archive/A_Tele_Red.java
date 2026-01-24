@@ -1,12 +1,12 @@
-package org.firstinspires.ftc.teamcode.opmodes;
+package org.firstinspires.ftc.teamcode.archive;
 
 
-import static org.firstinspires.ftc.teamcode.pedroPathing.Constants.blue;
 import static org.firstinspires.ftc.teamcode.pedroPathing.Constants.driveConstants;
 import static org.firstinspires.ftc.teamcode.pedroPathing.Constants.red;
 
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -32,16 +32,16 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-
+@Disabled
 @TeleOp
 public class A_Tele_Red extends CommandOpMode {
     public int alliance = red;
     /*********
      * Modified Left Bumper on 2 to not strafe or distance, but to change flywheel speed
      */
-    public final double[] DISTANCE_CAL = {0,40.6, 65.8, 126.5,205};
-    public final double[] TOP_FLYWHEEL_CAL = {.65,.65,.65,.75,.8};
-    public final double[] BOTTOM_FLYWHEEL_CAL = {.8,.8,.85,.85,.85};
+    public final double[] DISTANCE_CAL = {0,42, 65.8, 126.5,205};
+    public final double[] TOP_FLYWHEEL_CAL = {.65,.68,.65,.75,.8};
+    public final double[] BOTTOM_FLYWHEEL_CAL = {.76,.76,.85,.85,.85};
     InterpLUT topFlywheelLUT;
     InterpLUT bottomFlywheelLUT;
     final double DESIRED_DISTANCE = 72.0; //  this is how close the camera should get to the target (inches)
@@ -239,6 +239,8 @@ public class A_Tele_Red extends CommandOpMode {
              * Chassis Speed Control
              */
             driveConstants.maxPower(1.0);
+
+
             chassisSpeedFast=gamepad1.right_trigger;
             chassisSpeedSlow=gamepad1.left_trigger;
 
@@ -272,8 +274,8 @@ public class A_Tele_Red extends CommandOpMode {
 
             if(topFlywheelFaster.clickedDown){topFlywheelDesired+=.05;}
             if(topFlywheelSlower.clickedDown){topFlywheelDesired-=0.05;}
-            if(bottomFlywheelFaster.clickedDown){flywheelAdjust+=0.05;}
-            if(bottomFlywheelSlower.clickedDown){flywheelAdjust-=0.05;}
+            if(bottomFlywheelFaster.clickedDown){flywheelAdjust+=0.025;}
+            if(bottomFlywheelSlower.clickedDown){flywheelAdjust-=0.025;}
             if(flywheelOn.clickedDown){runFlywheel=true;}
             if(flywheelOff.clickedDown){runFlywheel=false;}
             if (runFlywheel) {

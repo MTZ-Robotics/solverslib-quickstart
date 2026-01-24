@@ -7,6 +7,7 @@ import static org.firstinspires.ftc.teamcode.pedroPathing.Constants.red;
 
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -27,7 +28,7 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-
+@Disabled
 @TeleOp
 public class MTZPedroTeleOpWithCamera3 extends CommandOpMode {
     public int alliance = blue;

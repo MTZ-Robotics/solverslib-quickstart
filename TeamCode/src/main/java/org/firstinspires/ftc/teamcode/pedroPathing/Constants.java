@@ -8,6 +8,7 @@ import com.pedropathing.follower.FollowerConstants;
 import com.pedropathing.ftc.FollowerBuilder;
 import com.pedropathing.ftc.drivetrains.MecanumConstants;
 import com.pedropathing.ftc.localization.constants.OTOSConstants;
+import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathConstraints;
 import com.qualcomm.hardware.sparkfun.SparkFunOTOS;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -15,14 +16,31 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
+
 public class Constants {
 
     public static int red = 1;
     public static int blue = -1;
+    public static int alliance = blue;
 
     public static final class LauncherConstants {
         public static final String LAUNCHER_MOTOR_1_ID = "m5";
         public static final String LAUNCHER_MOTOR_2_ID = "m6";
+    }
+    public static final class cameraConstants {
+        /**********************
+         * Camera Axes: Origin location: Center of the lens; Axes orientation: +x right, +y down, +z forward (from camera’s perspective)
+         *
+         * Robot axes: Origin location: Center of the robot at field height; Axes orientation: +x right, +y forward, +z upward
+         */
+
+        public static final double cameraX = -25; //mm Right
+        public static final double cameraY = 200; //mm Forward
+        public static final double cameraZ = 30; //mm Up
+        public static final double cameraYaw = 8; //degrees Forward 0, Left 90, Right -90
+        public static final double cameraPitch = -80; //degrees Rotation about X 0 is straight up, forward is -90
+        public static final double cameraRoll = 0; //degrees Rotation about camera Z, Landscape is 0
     }
     public static FollowerConstants followerConstants = new FollowerConstants()
             .mass(7.9)

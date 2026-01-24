@@ -1,5 +1,6 @@
-package org.firstinspires.ftc.teamcode.opmodes;
+package org.firstinspires.ftc.teamcode.archive;
 
+import static org.firstinspires.ftc.teamcode.pedroPathing.Constants.alliance;
 import static org.firstinspires.ftc.teamcode.pedroPathing.Constants.blue;
 import static org.firstinspires.ftc.teamcode.pedroPathing.Constants.driveConstants;
 import static org.firstinspires.ftc.teamcode.pedroPathing.Constants.red;
@@ -18,6 +19,7 @@ import com.pedropathing.paths.PathChain;
 import com.pedropathing.util.PoseHistory;
 import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -25,11 +27,10 @@ import com.seattlesolvers.solverslib.util.TelemetryData;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 //import org.firstinspires.ftc.teamcode.pedroPathing.Drawing;
-
+@Disabled
 @Autonomous
 public class Park2 extends OpMode {
     /****************** Modify These Variables ************************/
-    public int alliance = red;
     public int startingPosition = 1;
     public double topFlywheelRatio = .45;
     public double bottomFlywheelDesired = 0.76;
@@ -64,10 +65,10 @@ public class Park2 extends OpMode {
     /************** End of Highly Modifiable Variables **************/
 
 
-    private Pose startPose = new Pose(23, 0, Math.toRadians(135));
-    private Pose interPose = new Pose(48, -16, Math.toRadians(135));
-    private Pose endPose = new Pose(58, 24, Math.toRadians(90));
-    private Pose scorePose = new Pose(48, 108, Math.toRadians(135));
+    private Pose startPose = new Pose(0, 0, Math.toRadians(135));
+    private Pose interPose = new Pose(0, 0, Math.toRadians(135));
+    private Pose endPose = new Pose(5, 5, Math.toRadians(90));
+    private Pose scorePose = new Pose(0, 0, Math.toRadians(135));
 
 
 
@@ -101,6 +102,10 @@ public class Park2 extends OpMode {
 
     public void buildPaths() {
         /* This is our scorePreload path. We are using a BezierLine, which is a straight line. */
+
+        alliance = red;
+
+        /*
         if (alliance == blue) {
             if (startingPosition == 2) {
                 startPose = blueStartPose2;
@@ -121,6 +126,8 @@ public class Park2 extends OpMode {
             endPose = redEndPose;
             scorePose = redScorePose;
         }
+
+         */
 
         scorePreload = new Path(new BezierLine(startPose, scorePose));
         scorePreload.setLinearHeadingInterpolation(startPose.getHeading(), scorePose.getHeading());

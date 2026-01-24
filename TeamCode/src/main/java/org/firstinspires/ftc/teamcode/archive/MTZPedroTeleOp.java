@@ -15,7 +15,7 @@ import com.seattlesolvers.solverslib.util.TelemetryData;
 
 import org.firstinspires.ftc.teamcode.util.mtzButtonBehavior;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
-@Disabled
+//@Disabled
 @TeleOp
 public class MTZPedroTeleOp extends CommandOpMode {
     Follower teleFollower;

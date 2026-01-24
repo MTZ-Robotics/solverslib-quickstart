@@ -104,9 +104,9 @@ public class AutoTest_2 extends OpMode {
 
     TelemetryData telemetryData = new TelemetryData(telemetry);
 
-    public static Follower autoBlueFollower;
+    public static Follower autoFollower;
 
-    private Timer pathTimer, actionTimer, opmodeTimer, allianceSelectTimer, pathSelectTimer;
+    private Timer pathTimer, actionTimer, opmodeTimer, allianceSelectTimer, pathSelectTimer, delaySelectTimer;
 
     public enum triggerState {readyToFire, firing, resetting}
     public triggerState currentTriggerState;
@@ -151,11 +151,11 @@ public class AutoTest_2 extends OpMode {
         scorePreload = new Path(new BezierLine(interPose, scorePose));
         scorePreload.setLinearHeadingInterpolation(startPose.getHeading(), scorePose.getHeading());
 
-        backUpToShoot = autoBlueFollower.pathBuilder()
+        backUpToShoot = autoFollower.pathBuilder()
                 .addPath(new BezierLine(startPose, interPose))
                 .setLinearHeadingInterpolation(startPose.getHeading(), interPose.getHeading())
                 .build();
-         goPark = autoBlueFollower.pathBuilder()
+         goPark = autoFollower.pathBuilder()
                 .addPath(new BezierLine(interPose, endPose))
                 .setLinearHeadingInterpolation(interPose.getHeading(), endPose.getHeading())
                .build();
@@ -173,14 +173,14 @@ public class AutoTest_2 extends OpMode {
                 setPathState(1);
                 break;
             case 1:
-                autoBlueFollower.followPath(backUpToShoot, true);
+                autoFollower.followPath(backUpToShoot, true);
                 setPathState(2);
                 break;
             case 2:
-                autoBlueFollower.followPath(scorePreload, true);
+                autoFollower.followPath(scorePreload, true);
 
 
-                if (!autoBlueFollower.isBusy()) {
+                if (!autoFollower.isBusy()) {
                     /* Score Preload */
 
                     /* Since this is a pathChain, we can have Pedro hold the end point while we are grabbing the sample */
@@ -189,7 +189,7 @@ public class AutoTest_2 extends OpMode {
                      * Fire Trigger 3x
                      */
 
-                    //autoBlueFollower.followPath(grabPickup1,true);
+                    //autoFollower.followPath(grabPickup1,true);
                     //if 1st time through firing loop, set the action timer
                     switch (currentTriggerState) {
                         case readyToFire:
@@ -226,13 +226,13 @@ public class AutoTest_2 extends OpMode {
                 break;
             case 3:
                 /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the pickup1Pose's position */
-                if (!autoBlueFollower.isBusy()) {
+                if (!autoFollower.isBusy()) {
 
                     bottomFlywheel.setPower(0);
                     topFlywheel.setPower(0);
 
                     /* Since this is a pathChain, we can have Pedro hold the end point while we are scoring the sample */
-                    autoBlueFollower.followPath(goPark, true);
+                    autoFollower.followPath(goPark, true);
                     setPathState(4);
                 }
                 break;
@@ -257,16 +257,16 @@ public class AutoTest_2 extends OpMode {
             // These loop the movements of the robot, these must be called continuously in order to work
 
             //driveConstants.maxPower(chassisSpeedMax);
-            autoBlueFollower.update();
+            autoFollower.update();
             autonomousPathUpdate();
 
             // Feedback to Driver Hub for debugging
             telemetry.addData("path state", pathState);
-            telemetry.addData("x", autoBlueFollower.getPose().getX());
-            telemetry.addData("y", autoBlueFollower.getPose().getY());
-            telemetry.addData("heading", autoBlueFollower.getPose().getHeading());
-            telemetry.addData("Aim Heading", Math.atan((autoBlueFollower.getPose().getY()-blueTargetY)/(autoBlueFollower.getPose().getX()-blueTargetX)));
-            telemetry.addData("Aim Distance", Math.sqrt(((autoBlueFollower.getPose().getY()-blueTargetY)*(autoBlueFollower.getPose().getY()-blueTargetY))+((autoBlueFollower.getPose().getX()-blueTargetX)*(autoBlueFollower.getPose().getX()-blueTargetX))));
+            telemetry.addData("x", autoFollower.getPose().getX());
+            telemetry.addData("y", autoFollower.getPose().getY());
+            telemetry.addData("heading", autoFollower.getPose().getHeading());
+            telemetry.addData("Aim Heading", Math.atan((autoFollower.getPose().getY()-blueTargetY)/(autoFollower.getPose().getX()-blueTargetX)));
+            telemetry.addData("Aim Distance", Math.sqrt(((autoFollower.getPose().getY()-blueTargetY)*(autoFollower.getPose().getY()-blueTargetY))+((autoFollower.getPose().getX()-blueTargetX)*(autoFollower.getPose().getX()-blueTargetX))));
 
             telemetry.update();
         }
@@ -281,28 +281,18 @@ public class AutoTest_2 extends OpMode {
             pathSelectTimer.resetTimer();
             allianceSelectTimer = new Timer();
             allianceSelectTimer.resetTimer();
+            delaySelectTimer = new Timer();
+            delaySelectTimer.resetTimer();
 
-
-            autoBlueFollower = Constants.createFollower(hardwareMap);
+            autoFollower = Constants.createFollower(hardwareMap);
+            
+           //TODO: This buildPaths may need to move to the start method
             buildPaths();
 
 
-            if (alliance == blue) {
-                if (startingPosition == 2) {
-                    autoBlueFollower.setStartingPose(blueStartPose2);
-                } else {
-                    autoBlueFollower.setStartingPose(blueStartPose1);
-                }
-            } else if (alliance == red) {
-                if (startingPosition == 2) {
-                    autoBlueFollower.setStartingPose(redStartPose2);
-                } else {
-                    autoBlueFollower.setStartingPose(redStartPose1);
-                }
-            }
 
 
-            poseHistory = autoBlueFollower.getPoseHistory();
+            poseHistory = autoFollower.getPoseHistory();
 
             telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
 
@@ -320,12 +310,13 @@ public class AutoTest_2 extends OpMode {
             currentTriggerState = triggerState.readyToFire;
             pathSelectTimer.resetTimer();
             allianceSelectTimer.resetTimer();
+            delaySelectTimer.resetTimer();
         }
 
         @Override
         public void init_loop () {
             //Alliance Selection
-            if(gamepad1.dpad_up && allianceSelectTimer.getElapsedTimeSeconds()>2) {
+            if(gamepad1.dpad_left && allianceSelectTimer.getElapsedTimeSeconds()>.5) {
                 allianceSelectTimer.resetTimer();
                 if (alliance == blue) {
                     alliance = red;
@@ -334,7 +325,7 @@ public class AutoTest_2 extends OpMode {
                 }
             }
             //Path Selection
-            if(gamepad1.dpad_down && pathSelectTimer.getElapsedTimeSeconds()>2) {
+            if(gamepad1.dpad_right && pathSelectTimer.getElapsedTimeSeconds()>.25) {
                 pathSelectTimer.resetTimer();
                 chosenPath = pathOptions.values()[(chosenPath.ordinal() + 1) % pathOptions.values().length];
 
@@ -343,12 +334,36 @@ public class AutoTest_2 extends OpMode {
                     chosenPath = pathOptions.farPark;
                 }
             }
+            //Start Delay Adjustment
+            if(gamepad1.dpad_up && delaySelectTimer.getElapsedTimeSeconds()>.25) {
+                delaySelectTimer.resetTimer();
+                timeToDelayStart = timeToDelayStart+1;
+            }
+            if(gamepad1.dpad_down && delaySelectTimer.getElapsedTimeSeconds()>.25) {
+                delaySelectTimer.resetTimer();
+                timeToDelayStart = timeToDelayStart-1;
+            }
 
-            telemetryData.addData("Select Alliance with the Up Button.", alliance==red?"Red":"Blue");
-            telemetryData.addData("Select Path with the Down Button.", chosenPathName[chosenPath.ordinal()]);
+            if (alliance == blue) {
+                if (startingPosition == 2) {
+                    autoFollower.setStartingPose(blueStartPose2);
+                } else {
+                    autoFollower.setStartingPose(blueStartPose1);
+                }
+            } else if (alliance == red) {
+                if (startingPosition == 2) {
+                    autoFollower.setStartingPose(redStartPose2);
+                } else {
+                    autoFollower.setStartingPose(redStartPose1);
+                }
+            }
+
+            telemetryData.addData("Select Alliance with the Left Button.", alliance==red?"Red":"Blue");
+            telemetryData.addData("Select Path with the Right Button.", chosenPathName[chosenPath.ordinal()]);
+            telemetryData.addData("Modify start delay with Up & Down Buttons", timeToDelayStart);
 
             telemetryData.update();
-            //autoBlueFollower.update();
+            //autoFollower.update();
             //drawCurrent();
 
         }
@@ -385,16 +400,16 @@ public class AutoTest_2 extends OpMode {
              * This draws everything that will be used in the Follower's telemetryDebug() method. This takes
              * a Follower as an input, so an instance of the DashbaordDrawingHandler class is not needed.
              *
-             * @param autoBlueFollower Pedro Follower instance.
+             * @param autoFollower Pedro Follower instance.
              */
-        /*public void drawDebug(Follower autoBlueFollower) {
-            if (autoBlueFollower.getCurrentPath() != null) {
-                drawPath(autoBlueFollower.getCurrentPath(), robotLook);
-                Pose closestPoint = autoBlueFollower.getPointFromPath(autoBlueFollower.getCurrentPath().getClosestPointTValue());
-                drawRobot(new Pose(closestPoint.getX(), closestPoint.getY(), autoBlueFollower.getCurrentPath().getHeadingGoal(autoBlueFollower.getCurrentPath().getClosestPointTValue())), robotLook);
+        /*public void drawDebug(Follower autoFollower) {
+            if (autoFollower.getCurrentPath() != null) {
+                drawPath(autoFollower.getCurrentPath(), robotLook);
+                Pose closestPoint = autoFollower.getPointFromPath(autoFollower.getCurrentPath().getClosestPointTValue());
+                drawRobot(new Pose(closestPoint.getX(), closestPoint.getY(), autoFollower.getCurrentPath().getHeadingGoal(autoFollower.getCurrentPath().getClosestPointTValue())), robotLook);
             }
-            drawPoseHistory(autoBlueFollower.getPoseHistory(), historyLook);
-            drawRobot(autoBlueFollower.getPose(), historyLook);
+            drawPoseHistory(autoFollower.getPoseHistory(), historyLook);
+            drawRobot(autoFollower.getPose(), historyLook);
 
             sendPacket();
         }
@@ -528,7 +543,7 @@ public class AutoTest_2 extends OpMode {
     }
 
     public void drawCurrent() {
-        Drawing.drawRobot(autoBlueFollower.getPose());
+        Drawing.drawRobot(autoFollower.getPose());
     }*/
 
 }

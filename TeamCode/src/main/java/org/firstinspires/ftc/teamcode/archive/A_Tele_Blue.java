@@ -24,8 +24,8 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Position;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
-import org.firstinspires.ftc.teamcode.util.mtzButtonBehavior;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
+import org.firstinspires.ftc.teamcode.util.mtzButtonBehavior;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
@@ -34,9 +34,16 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 @Disabled
 @TeleOp
-public class Small_Triangle_Shooting_W_Intake extends CommandOpMode {
-    public int alliance = red;
-    // Adjust these numbers to suit your robot.
+public class A_Tele_Blue extends CommandOpMode {
+    public int alliance = blue;
+    /*********
+     * Modified Left Bumper on 2 to not strafe or distance, but to change flywheel speed
+     */
+    public final double[] DISTANCE_CAL = {0,42, 65.8, 126.5,205};
+    public final double[] TOP_FLYWHEEL_CAL = {.65,.68,.65,.8,.82};
+    public final double[] BOTTOM_FLYWHEEL_CAL = {.72,.72,.85,.85,.85};
+    InterpLUT topFlywheelLUT;
+    InterpLUT bottomFlywheelLUT;
     final double DESIRED_DISTANCE = 72.0; //  this is how close the camera should get to the target (inches)
 
     //  Set the GAIN constants to control the relationship between the measured position error, and how much power is
@@ -70,11 +77,19 @@ public class Small_Triangle_Shooting_W_Intake extends CommandOpMode {
     boolean runFlywheel = false;
     boolean runIntake = false;
     double intakeDesired = .75;
-    double topFlywheelDesired = .75;
-    double bottomFlywheelDesired = 0.9;
+    double topFlywheelDesired = .65;
+    double bottomFlywheelDesired = 0.85;
     double triggerToIntake = 0.1;
     double triggerToHold = 0.45;
     double triggerToFire = 0.9;
+    double flywheelAdjust = 1.0;
+    /*******
+     * Add Controller Variables & Objects
+     ********/
+// Assign Variables & Objects for Control Pads
+    double triggerValue = 0;
+    double aimError = 0;
+    double chassisSpeedRatio=0.75;
 
     /*************************
      * Motor & Servo Variables
@@ -88,13 +103,7 @@ public class Small_Triangle_Shooting_W_Intake extends CommandOpMode {
     //CRServo index1 = new CRServo(hardwareMap, "s6");
 
 
-    /*******
-     * Add Controller Variables & Objects
-     ********/
-// Assign Variables & Objects for Control Pads
-    double triggerValue = 0;
-    double aimError = 0;
-    double chassisSpeedRatio=0.75;
+
     InterpLUT triggerServoLUT = new InterpLUT();
 
     mtzButtonBehavior topFlywheelFaster = new mtzButtonBehavior();
@@ -102,9 +111,6 @@ public class Small_Triangle_Shooting_W_Intake extends CommandOpMode {
     mtzButtonBehavior topFlywheelSlower = new mtzButtonBehavior();
     mtzButtonBehavior bottomFlywheelSlower = new mtzButtonBehavior();
     mtzButtonBehavior aimBumper = new mtzButtonBehavior();
-    mtzButtonBehavior aimBumperClose = new mtzButtonBehavior();
-    mtzButtonBehavior aimBumperMiddle = new mtzButtonBehavior();
-    mtzButtonBehavior aimBumperFar = new mtzButtonBehavior();
     mtzButtonBehavior triggerHold = new mtzButtonBehavior();
     mtzButtonBehavior triggerIntake = new mtzButtonBehavior();
     mtzButtonBehavior intakeOn = new mtzButtonBehavior();
@@ -116,6 +122,7 @@ public class Small_Triangle_Shooting_W_Intake extends CommandOpMode {
     double chassisSpeedSlow;
     double chassisSpeedFast;
     double triggerFire = 0;
+    double reverseIntake = 0;
 
     @Override
     public void initialize() {
@@ -145,6 +152,17 @@ public class Small_Triangle_Shooting_W_Intake extends CommandOpMode {
         //index1.setZeroPowerBehavior(CRServo.ZeroPowerBehavior.FLOAT);
         index1 = hardwareMap.servo.get("s6");
 
+        // Initialize the Apriltag Detection process
+        initAprilTag();
+        if (USE_WEBCAM)
+            setManualExposure(6, 250);  // Use low exposure time to reduce motion blur
+
+        // Wait for driver to press start
+        telemetry.addData("Camera preview on/off", "3 dots, Camera Stream");
+        telemetry.addData(">", "Touch START to start OpMode");
+        telemetry.update();
+        waitForStart();
+
     }
 
     @Override
@@ -159,6 +177,23 @@ public class Small_Triangle_Shooting_W_Intake extends CommandOpMode {
 
         //teleFollower.setTeleOpDrive(-gamepad1.left_stick_y, -gamepad1.left_stick_x, -gamepad1.right_stick_x, false);
 
+        InterpLUT topFlywheelLUT = new InterpLUT();
+        InterpLUT bottomFlywheelLUT = new InterpLUT();
+
+        topFlywheelLUT .add(DISTANCE_CAL[0], TOP_FLYWHEEL_CAL[0]);
+        topFlywheelLUT.add(DISTANCE_CAL[1], TOP_FLYWHEEL_CAL[1]);
+        topFlywheelLUT.add(DISTANCE_CAL[2], TOP_FLYWHEEL_CAL[2]);
+        topFlywheelLUT.add(DISTANCE_CAL[3], TOP_FLYWHEEL_CAL[3]);
+        topFlywheelLUT.add(DISTANCE_CAL[4], TOP_FLYWHEEL_CAL[4]);
+        topFlywheelLUT.createLUT();
+
+        bottomFlywheelLUT .add(DISTANCE_CAL[0], BOTTOM_FLYWHEEL_CAL[0]);
+        bottomFlywheelLUT.add(DISTANCE_CAL[1], BOTTOM_FLYWHEEL_CAL[1]);
+        bottomFlywheelLUT.add(DISTANCE_CAL[2], BOTTOM_FLYWHEEL_CAL[2]);
+        bottomFlywheelLUT.add(DISTANCE_CAL[3], BOTTOM_FLYWHEEL_CAL[3]);
+        bottomFlywheelLUT.add(DISTANCE_CAL[4], BOTTOM_FLYWHEEL_CAL[4]);
+        bottomFlywheelLUT.createLUT();
+
 
 
 
@@ -168,8 +203,7 @@ public class Small_Triangle_Shooting_W_Intake extends CommandOpMode {
         double  strafe          = 0;        // Desired strafe power/speed (-1 to +1)
         double  turn            = 0;        // Desired turning power/speed (-1 to +1)
 
-        // Initialize the Apriltag Detection process
-        initAprilTag();
+
 
         // Initialize the hardware variables. Note that the strings used here as parameters
         // to 'get' must match the names assigned during the robot configuration.
@@ -187,14 +221,6 @@ public class Small_Triangle_Shooting_W_Intake extends CommandOpMode {
         rightFrontDrive.setDirection(DcMotor.Direction.REVERSE);
         rightBackDrive.setDirection(DcMotor.Direction.REVERSE);
 
-        if (USE_WEBCAM)
-            setManualExposure(6, 250);  // Use low exposure time to reduce motion blur
-
-        // Wait for driver to press start
-        telemetry.addData("Camera preview on/off", "3 dots, Camera Stream");
-        telemetry.addData(">", "Touch START to start OpMode");
-        telemetry.update();
-        waitForStart();
 
         while (opModeIsActive())
         {
@@ -206,7 +232,7 @@ public class Small_Triangle_Shooting_W_Intake extends CommandOpMode {
              *
              * Chassis Control
              */
-            aimError=Math.toRadians(45);         //-teleFollower.getPose().getHeading();
+            aimError=Math.toRadians(45)-teleFollower.getPose().getHeading();
 
 
             /***
@@ -227,36 +253,32 @@ public class Small_Triangle_Shooting_W_Intake extends CommandOpMode {
 
             //triggerValue = triggerServoLUT.get(gamepad1.right_trigger);
             bottomFlywheelFaster.update(gamepad2.dpad_up);
-            topFlywheelFaster.update(gamepad2.dpad_left);
-            topFlywheelSlower.update(gamepad2.dpad_right);
+            topFlywheelFaster.update(gamepad2.dpad_right);
+            topFlywheelSlower.update(gamepad2.dpad_left);
             bottomFlywheelSlower.update(gamepad2.dpad_down);
-            aimBumper.update(gamepad1.left_bumper);
-            aimBumperClose.update(gamepad1.b);
-            aimBumperMiddle.update(gamepad1.y);
-            aimBumperFar.update(gamepad1.x);
-            triggerHold.update(gamepad2.y);
-            triggerIntake.update(gamepad2.a);
+            aimBumper.update(gamepad2.left_bumper);
+            intakeOff.update(gamepad2.y);
+            intakeOn.update(gamepad2.a);
             flywheelOn.update(gamepad2.b);
             flywheelOff.update(gamepad2.x);
             triggerFire = gamepad2.right_trigger;
+            reverseIntake = gamepad2.left_trigger;
 
             redAllianceButton.update(gamepad1.dpad_left);
             blueAllianceButton.update(gamepad1.dpad_right);
-            intakeOn.update(gamepad1.dpad_down);
-            intakeOff.update(gamepad1.dpad_up);
 
 
 
 
             if(topFlywheelFaster.clickedDown){topFlywheelDesired+=.05;}
             if(topFlywheelSlower.clickedDown){topFlywheelDesired-=0.05;}
-            if(bottomFlywheelFaster.clickedDown){bottomFlywheelDesired+=0.05;}
-            if(bottomFlywheelSlower.clickedDown){bottomFlywheelDesired-=0.05;}
+            if(bottomFlywheelFaster.clickedDown){flywheelAdjust+=0.025;}
+            if(bottomFlywheelSlower.clickedDown){flywheelAdjust-=0.025;}
             if(flywheelOn.clickedDown){runFlywheel=true;}
             if(flywheelOff.clickedDown){runFlywheel=false;}
             if (runFlywheel) {
-                bottomFlywheel.setPower(bottomFlywheelDesired);
-                topFlywheel.setPower(topFlywheelDesired);
+                bottomFlywheel.setPower(bottomFlywheelDesired*flywheelAdjust);
+                topFlywheel.setPower(topFlywheelDesired*flywheelAdjust);
                 bottomFlywheel.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
                 topFlywheel.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
@@ -267,8 +289,8 @@ public class Small_Triangle_Shooting_W_Intake extends CommandOpMode {
             }
 
 
-            if(intakeOn.clickedDown){runIntake=true;}
-            if(intakeOff.clickedDown){runIntake=false;}
+            if(intakeOn.clickedDown){runIntake=true;runFlywheel=false;}
+            if(intakeOff.clickedDown){runIntake=false;runFlywheel=true;}
 
             if (runIntake) {
                 intake.setPower(intakeDesired);
@@ -277,7 +299,7 @@ public class Small_Triangle_Shooting_W_Intake extends CommandOpMode {
                 trigger.setPosition(triggerToIntake);
             }
             else {
-                intake.setPower(0);
+                intake.setPower(-reverseIntake);
                 index1.setPosition(.5);
                 trigger.setPosition(triggerToHold);
             }
@@ -292,12 +314,18 @@ public class Small_Triangle_Shooting_W_Intake extends CommandOpMode {
                 trigger.setPosition(triggerToHold);
             }
 
+
+/*
             if (redAllianceButton.clickedDown){
                 alliance=red;
             }
             if (blueAllianceButton.clickedDown){
                 alliance=blue;
             }
+
+
+ */
+
             if (alliance==red){
                 DESIRED_TAG_ID = RED_TARGET_TAG_ID;
             } else {
@@ -317,13 +345,14 @@ public class Small_Triangle_Shooting_W_Intake extends CommandOpMode {
 
          */
 
-            telemetryData.addData("Alliance (1 Red) ", alliance);
+            telemetryData.addData("Alliance", alliance==red?"Red":"Blue");
             telemetryData.addData("X", teleFollower.getPose().getX());
             telemetryData.addData("Y", teleFollower.getPose().getY());
             telemetryData.addData("Heading", teleFollower.getPose().getHeading());
             telemetryData.addData("Top Flywheel Power", topFlywheel.getPower());
             //telemetryData.addData("Top Flywheel Ratio", topFlywheelDesired);
             telemetryData.addData("Bottom Flywheel Power", bottomFlywheel.getPower());
+            telemetryData.addData("Flywheel Adjust", flywheelAdjust);
             telemetryData.addData("Trigger Value", triggerValue);
             telemetryData.addData("Trigger Position", trigger.getPosition());
             telemetryData.addData("Aim Error", aimError);
@@ -378,46 +407,8 @@ public class Small_Triangle_Shooting_W_Intake extends CommandOpMode {
             }
 
             // If Left Bumper is being pressed, AND we have found the desired target, Drive to target Automatically .
-            if (gamepad1.left_bumper && targetFound) {
+            if (aimBumper.isDown && targetFound) {
 
-                // Determine heading, range and Yaw (tag image rotation) error so we can use them to control the robot automatically.
-                double  rangeError      = (desiredTag.ftcPose.range - DESIRED_DISTANCE);
-                double  headingError    = desiredTag.ftcPose.bearing;
-                double  yawError        = desiredTag.ftcPose.yaw;
-
-                // Use the speed and turn "gains" to calculate how we want the robot to move.
-                drive  = Range.clip(rangeError * SPEED_GAIN, -MAX_AUTO_SPEED, MAX_AUTO_SPEED);
-                turn   = Range.clip(headingError * TURN_GAIN, -MAX_AUTO_TURN, MAX_AUTO_TURN) ;
-                strafe = Range.clip(-yawError * STRAFE_GAIN, -MAX_AUTO_STRAFE, MAX_AUTO_STRAFE);
-
-                telemetry.addData("Auto","Drive %5.2f, Strafe %5.2f, Turn %5.2f ", drive, strafe, turn);
-            } else if (gamepad1.b && targetFound) {
-
-                // Determine heading, range and Yaw (tag image rotation) error so we can use them to control the robot automatically.
-                double rangeError = (desiredTag.ftcPose.range - DESIRED_DISTANCE + 90);
-                double headingError = desiredTag.ftcPose.bearing;
-                double yawError = desiredTag.ftcPose.yaw;
-
-                // Use the speed and turn "gains" to calculate how we want the robot to move.
-                drive = Range.clip(rangeError * SPEED_GAIN, -MAX_AUTO_SPEED, MAX_AUTO_SPEED);
-                turn = Range.clip(headingError * TURN_GAIN, -MAX_AUTO_TURN, MAX_AUTO_TURN);
-                strafe = Range.clip(-yawError * STRAFE_GAIN, -MAX_AUTO_STRAFE, MAX_AUTO_STRAFE);
-
-                telemetry.addData("Auto", "Drive %5.2f, Strafe %5.2f, Turn %5.2f ", drive, strafe, turn);
-            } else if (gamepad1.y && targetFound) {
-
-                // Determine heading, range and Yaw (tag image rotation) error so we can use them to control the robot automatically.
-                double rangeError = (desiredTag.ftcPose.range - DESIRED_DISTANCE + 75);
-                double headingError = desiredTag.ftcPose.bearing;
-                double yawError = desiredTag.ftcPose.yaw;
-
-                // Use the speed and turn "gains" to calculate how we want the robot to move.
-                drive = Range.clip(rangeError * SPEED_GAIN, -MAX_AUTO_SPEED, MAX_AUTO_SPEED);
-                turn = Range.clip(headingError * TURN_GAIN, -MAX_AUTO_TURN, MAX_AUTO_TURN);
-                strafe = Range.clip(-yawError * STRAFE_GAIN, -MAX_AUTO_STRAFE, MAX_AUTO_STRAFE);
-
-                telemetry.addData("Auto", "Drive %5.2f, Strafe %5.2f, Turn %5.2f ", drive, strafe, turn);
-            } else if (gamepad1.x && targetFound) {
 
                 // Determine heading, range and Yaw (tag image rotation) error so we can use them to control the robot automatically.
                 double rangeError = (desiredTag.ftcPose.range - DESIRED_DISTANCE);
@@ -429,8 +420,48 @@ public class Small_Triangle_Shooting_W_Intake extends CommandOpMode {
                 turn = Range.clip(headingError * TURN_GAIN, -MAX_AUTO_TURN, MAX_AUTO_TURN);
                 strafe = Range.clip(-yawError * STRAFE_GAIN, -MAX_AUTO_STRAFE, MAX_AUTO_STRAFE);
 
-                telemetry.addData("Auto", "Drive %5.2f, Strafe %5.2f, Turn %5.2f ", drive, strafe, turn);
-            } else if (gamepad1.right_bumper && targetFound) {
+
+
+
+                /***
+                double headingError = desiredTag.ftcPose.bearing;
+
+                turn = Range.clip(headingError * TURN_GAIN, -MAX_AUTO_TURN, MAX_AUTO_TURN);
+
+                drive = -gamepad1.left_stick_y * chassisSpeedRatio;  // Reduce drive rate to 50%.
+                strafe = -gamepad1.left_stick_x * chassisSpeedRatio;  // Reduce strafe rate to 50%.
+
+
+                topFlywheelDesired = topFlywheelLUT.get(desiredTag.ftcPose.range);
+                bottomFlywheelDesired = bottomFlywheelLUT.get(desiredTag.ftcPose.range);
+
+                 ****/
+
+
+
+                telemetry.addData("Auto Drive & Turn", "Drive %5.2f, Strafe %5.2f, Turn %5.2f ", drive, strafe, turn);
+            } else if (aimBumper.isDown) {
+
+
+
+                //turn = Range.clip(aimError * TURN_GAIN, -MAX_AUTO_TURN, MAX_AUTO_TURN);
+                turn   = -gamepad1.right_stick_x  * chassisSpeedRatio *.66;  // Reduce turn rate to 33%.
+
+                drive = -gamepad1.left_stick_y  * chassisSpeedRatio;  // Reduce drive rate to 50%.
+                strafe = -gamepad1.left_stick_x  * chassisSpeedRatio;  // Reduce strafe rate to 50%.
+
+
+                //Need to find distance to target based on follower
+                topFlywheelDesired = topFlywheelLUT.get(72);
+                bottomFlywheelDesired = bottomFlywheelLUT.get(72);
+
+                //topFlywheelDesired = topFlywheelLUT.get(desiredTag.ftcPose.range);
+                //bottomFlywheelDesired = bottomFlywheelLUT.get(desiredTag.ftcPose.range);
+
+
+
+                telemetry.addData("Target Not Found", "Drive %5.2f, Strafe %5.2f, Turn %5.2f ", drive, strafe, turn);
+            } else if (gamepad2.right_bumper && targetFound) {
 
                 // Determine heading, range and Yaw (tag image rotation) error so we can use them to control the robot automatically.
                 double rangeError = (desiredTag.ftcPose.range - DESIRED_DISTANCE);
@@ -442,19 +473,23 @@ public class Small_Triangle_Shooting_W_Intake extends CommandOpMode {
                 turn = Range.clip(headingError * TURN_GAIN, -MAX_AUTO_TURN, MAX_AUTO_TURN);
                 //strafe = Range.clip(-yawError * STRAFE_GAIN, -MAX_AUTO_STRAFE, MAX_AUTO_STRAFE);
 
-                telemetry.addData("Auto", "Drive %5.2f, Strafe %5.2f, Turn %5.2f ", drive, strafe, turn);
+
+                topFlywheelDesired = topFlywheelLUT.get(desiredTag.ftcPose.range);
+                bottomFlywheelDesired = bottomFlywheelLUT.get(desiredTag.ftcPose.range);
+
+                telemetry.addData("Auto Turn", "Drive %5.2f, Strafe %5.2f, Turn %5.2f ", drive, strafe, turn);
             } else {
 
                 // drive using manual POV Joystick mode.  Slow things down to make the robot more controlable.
-                drive  = -gamepad1.left_stick_y  / 2.0;  // Reduce drive rate to 50%.
-                strafe = -gamepad1.left_stick_x  / 2.0;  // Reduce strafe rate to 50%.
-                turn   = -gamepad1.right_stick_x / 3.0;  // Reduce turn rate to 33%.
+                drive  = -gamepad1.left_stick_y   * chassisSpeedRatio;  // Reduce drive rate to 50%.
+                strafe = -gamepad1.left_stick_x   * chassisSpeedRatio;  // Reduce strafe rate to 50%.
+                turn   = -gamepad1.right_stick_x  * chassisSpeedRatio *.66;  // Reduce turn rate to 33%.
                 telemetry.addData("Manual","Drive %5.2f, Strafe %5.2f, Turn %5.2f ", drive, strafe, turn);
             }
             telemetry.update();
 
             //teleFollower.setTeleOpDrive(-gamepad1.left_stick_y*chassisSpeedRatio, -gamepad1.left_stick_x*chassisSpeedRatio, -gamepad1.right_stick_x*chassisSpeedRatio, false);
-            teleFollower.setTeleOpDrive(drive, strafe, turn, gamepad1.left_bumper);
+            teleFollower.setTeleOpDrive(drive, strafe, turn, false);
             teleFollower.update();
             // Apply desired axes motions to the drivetrain.
             sleep(10);
@@ -489,8 +524,8 @@ public class Small_Triangle_Shooting_W_Intake extends CommandOpMode {
          * Use a yaw of 0 if the camera is pointing forwards, +90 degrees if it’s pointing straight left, -90 degrees for straight right, etc.
          * You can also set the roll to +/-90 degrees if it’s vertical, or 180 degrees if it’s upside-down.
          */
-        Position cameraPosition = new Position(DistanceUnit.INCH, -8, 2, 10, 0);
-        YawPitchRollAngles cameraOrientation = new YawPitchRollAngles(AngleUnit.DEGREES, 0, -90, 0, 0);
+        Position cameraPosition = new Position(DistanceUnit.INCH, -1, 8, 1, 0);
+        YawPitchRollAngles cameraOrientation = new YawPitchRollAngles(AngleUnit.DEGREES, 0, -80, 0, 0);
 
         aprilTag = new AprilTagProcessor.Builder()
                 .setCameraPose(cameraPosition, cameraOrientation)

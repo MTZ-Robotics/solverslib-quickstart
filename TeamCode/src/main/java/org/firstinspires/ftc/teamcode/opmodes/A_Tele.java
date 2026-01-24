@@ -1,7 +1,10 @@
 package org.firstinspires.ftc.teamcode.opmodes;
 
 
+import static org.firstinspires.ftc.teamcode.pedroPathing.Constants.alliance;
+
 import static org.firstinspires.ftc.teamcode.pedroPathing.Constants.blue;
+import static org.firstinspires.ftc.teamcode.pedroPathing.Constants.cameraConstants.*;
 import static org.firstinspires.ftc.teamcode.pedroPathing.Constants.driveConstants;
 import static org.firstinspires.ftc.teamcode.pedroPathing.Constants.red;
 
@@ -32,19 +35,18 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-
+//@Disabled
 @TeleOp
-public class A_Tele_Blue extends CommandOpMode {
-    public int alliance = blue;
+public class A_Tele extends CommandOpMode {
     /*********
      * Modified Left Bumper on 2 to not strafe or distance, but to change flywheel speed
      */
-    public final double[] DISTANCE_CAL = {0,40.6, 65.8, 126.5,205};
-    public final double[] TOP_FLYWHEEL_CAL = {.65,.65,.65,.75,.8};
-    public final double[] BOTTOM_FLYWHEEL_CAL = {.8,.8,.85,.85,.85};
+    public final double[] DISTANCE_CAL = {0,55, 65.8, 75,116,205};
+    public final double[] TOP_FLYWHEEL_CAL = {.65,.68,.65,.65,.8,.85};
+    public final double[] BOTTOM_FLYWHEEL_CAL = {.75,.75,.85,.85,.85,.85};
     InterpLUT topFlywheelLUT;
     InterpLUT bottomFlywheelLUT;
-    final double DESIRED_DISTANCE = 72.0; //  this is how close the camera should get to the target (inches)
+    final double DESIRED_DISTANCE = 66.0; //  this is how close the camera should get to the target (inches)
 
     //  Set the GAIN constants to control the relationship between the measured position error, and how much power is
     //  applied to the drive motors to correct the error.
@@ -77,7 +79,7 @@ public class A_Tele_Blue extends CommandOpMode {
     boolean runFlywheel = false;
     boolean runIntake = false;
     double intakeDesired = .75;
-    double topFlywheelDesired = .75;
+    double topFlywheelDesired = .65;
     double bottomFlywheelDesired = 0.85;
     double triggerToIntake = 0.1;
     double triggerToHold = 0.45;
@@ -270,10 +272,10 @@ public class A_Tele_Blue extends CommandOpMode {
 
 
 
-            if(topFlywheelFaster.clickedDown){topFlywheelDesired+=.05;}
-            if(topFlywheelSlower.clickedDown){topFlywheelDesired-=0.05;}
-            if(bottomFlywheelFaster.clickedDown){flywheelAdjust+=0.05;}
-            if(bottomFlywheelSlower.clickedDown){flywheelAdjust-=0.05;}
+            if(topFlywheelFaster.clickedDown){topFlywheelDesired+=0.025;}
+            if(topFlywheelSlower.clickedDown){topFlywheelDesired-=0.025;}
+            if(bottomFlywheelFaster.clickedDown){flywheelAdjust+=0.025;}
+            if(bottomFlywheelSlower.clickedDown){flywheelAdjust-=0.025;}
             if(flywheelOn.clickedDown){runFlywheel=true;}
             if(flywheelOff.clickedDown){runFlywheel=false;}
             if (runFlywheel) {
@@ -315,7 +317,7 @@ public class A_Tele_Blue extends CommandOpMode {
             }
 
 
-/*
+
             if (redAllianceButton.clickedDown){
                 alliance=red;
             }
@@ -324,7 +326,7 @@ public class A_Tele_Blue extends CommandOpMode {
             }
 
 
- */
+
 
             if (alliance==red){
                 DESIRED_TAG_ID = RED_TARGET_TAG_ID;
@@ -409,6 +411,21 @@ public class A_Tele_Blue extends CommandOpMode {
             // If Left Bumper is being pressed, AND we have found the desired target, Drive to target Automatically .
             if (aimBumper.isDown && targetFound) {
 
+
+                // Determine heading, range and Yaw (tag image rotation) error so we can use them to control the robot automatically.
+                double rangeError = (desiredTag.ftcPose.range - DESIRED_DISTANCE);
+                double headingError = desiredTag.ftcPose.bearing;
+                double yawError = desiredTag.ftcPose.yaw;
+
+                // Use the speed and turn "gains" to calculate how we want the robot to move.
+                drive = Range.clip(rangeError * SPEED_GAIN, -MAX_AUTO_SPEED, MAX_AUTO_SPEED);
+                turn = Range.clip(headingError * TURN_GAIN, -MAX_AUTO_TURN, MAX_AUTO_TURN);
+                strafe = Range.clip(-yawError * STRAFE_GAIN, -MAX_AUTO_STRAFE, MAX_AUTO_STRAFE);
+
+
+
+
+                /***
                 double headingError = desiredTag.ftcPose.bearing;
 
                 turn = Range.clip(headingError * TURN_GAIN, -MAX_AUTO_TURN, MAX_AUTO_TURN);
@@ -420,13 +437,17 @@ public class A_Tele_Blue extends CommandOpMode {
                 topFlywheelDesired = topFlywheelLUT.get(desiredTag.ftcPose.range);
                 bottomFlywheelDesired = bottomFlywheelLUT.get(desiredTag.ftcPose.range);
 
+                 ****/
 
 
-                telemetry.addData("Auto", "Drive %5.2f, Strafe %5.2f, Turn %5.2f ", drive, strafe, turn);
+
+                telemetry.addData("Auto Drive & Turn", "Drive %5.2f, Strafe %5.2f, Turn %5.2f ", drive, strafe, turn);
             } else if (aimBumper.isDown) {
 
 
-                turn = Range.clip(aimError * TURN_GAIN, -MAX_AUTO_TURN, MAX_AUTO_TURN);
+
+                //turn = Range.clip(aimError * TURN_GAIN, -MAX_AUTO_TURN, MAX_AUTO_TURN);
+                turn   = -gamepad1.right_stick_x  * chassisSpeedRatio *.66;  // Reduce turn rate to 33%.
 
                 drive = -gamepad1.left_stick_y  * chassisSpeedRatio;  // Reduce drive rate to 50%.
                 strafe = -gamepad1.left_stick_x  * chassisSpeedRatio;  // Reduce strafe rate to 50%.
@@ -441,7 +462,7 @@ public class A_Tele_Blue extends CommandOpMode {
 
 
 
-                telemetry.addData("Auto", "Drive %5.2f, Strafe %5.2f, Turn %5.2f ", drive, strafe, turn);
+                telemetry.addData("Target Not Found", "Drive %5.2f, Strafe %5.2f, Turn %5.2f ", drive, strafe, turn);
             } else if (gamepad2.right_bumper && targetFound) {
 
                 // Determine heading, range and Yaw (tag image rotation) error so we can use them to control the robot automatically.
@@ -454,7 +475,11 @@ public class A_Tele_Blue extends CommandOpMode {
                 turn = Range.clip(headingError * TURN_GAIN, -MAX_AUTO_TURN, MAX_AUTO_TURN);
                 //strafe = Range.clip(-yawError * STRAFE_GAIN, -MAX_AUTO_STRAFE, MAX_AUTO_STRAFE);
 
-                telemetry.addData("Auto", "Drive %5.2f, Strafe %5.2f, Turn %5.2f ", drive, strafe, turn);
+
+                topFlywheelDesired = topFlywheelLUT.get(desiredTag.ftcPose.range);
+                bottomFlywheelDesired = bottomFlywheelLUT.get(desiredTag.ftcPose.range);
+
+                telemetry.addData("Auto Turn", "Drive %5.2f, Strafe %5.2f, Turn %5.2f ", drive, strafe, turn);
             } else {
 
                 // drive using manual POV Joystick mode.  Slow things down to make the robot more controlable.
@@ -501,8 +526,8 @@ public class A_Tele_Blue extends CommandOpMode {
          * Use a yaw of 0 if the camera is pointing forwards, +90 degrees if it’s pointing straight left, -90 degrees for straight right, etc.
          * You can also set the roll to +/-90 degrees if it’s vertical, or 180 degrees if it’s upside-down.
          */
-        Position cameraPosition = new Position(DistanceUnit.INCH, 0, 8, 3, 0);
-        YawPitchRollAngles cameraOrientation = new YawPitchRollAngles(AngleUnit.DEGREES, 0, -90, 0, 0);
+        Position cameraPosition = new Position(DistanceUnit.MM, cameraX, cameraY, cameraZ, 0);
+        YawPitchRollAngles cameraOrientation = new YawPitchRollAngles(AngleUnit.DEGREES, cameraYaw, cameraPitch, cameraRoll, 0);
 
         aprilTag = new AprilTagProcessor.Builder()
                 .setCameraPose(cameraPosition, cameraOrientation)

@@ -1,10 +1,8 @@
-package org.firstinspires.ftc.teamcode.samples;
+package org.firstinspires.ftc.teamcode.archive;
 
 import static org.firstinspires.ftc.teamcode.pedroPathing.Constants.blue;
 import static org.firstinspires.ftc.teamcode.pedroPathing.Constants.driveConstants;
 import static org.firstinspires.ftc.teamcode.pedroPathing.Constants.red;
-
-import static java.lang.Thread.sleep;
 
 import com.bylazar.configurables.annotations.IgnoreConfigurable;
 import com.bylazar.field.FieldManager;
@@ -13,7 +11,6 @@ import com.bylazar.field.Style;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.follower.Follower;
-import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.Path;
 import com.pedropathing.paths.PathChain;
@@ -21,16 +18,17 @@ import com.pedropathing.util.PoseHistory;
 import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.seattlesolvers.solverslib.util.TelemetryData;
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
+
 //import org.firstinspires.ftc.teamcode.pedroPathing.Drawing;
 @Disabled
 @Autonomous
-public class AutoTest extends OpMode {
+public class Park extends OpMode {
     /****************** Modify These Variables ************************/
     public int alliance = blue;
     public int startingPosition = 1;
@@ -49,26 +47,26 @@ public class AutoTest extends OpMode {
     private double redTargetY=140;
     private double blueTargetX=4;
     private double blueTargetY=140;
-    private final Pose redScorePose = new Pose(144-43, 144-36, Math.atan(redTargetY-108/redTargetX-96));
-    private final Pose redStartPose1 = new Pose(144-21.5, 144-14.5, Math.toRadians(45));
-    private final Pose redStartPose2 = new Pose(121, 126, Math.toRadians(45));
-    private final Pose redInterPose = new Pose(144-50, 144-50, Math.toRadians(45));
-    private final Pose redEndPose = new Pose(102, 144-24, Math.toRadians(0));
+    private final Pose redScorePose = new Pose(0, 0, Math.atan(0));
+    private final Pose redStartPose1 = new Pose(0, 0, Math.toRadians(0));
+    private final Pose redStartPose2 = new Pose(0, 0, Math.toRadians(0));
+    private final Pose redInterPose = new Pose(0, 0, Math.toRadians(0));
+    private final Pose redEndPose = new Pose(5, 0, Math.toRadians(0));
 
     //private final Pose blueScorePose = new Pose(48, 108, Math.atan(blueTargetY-108/blueTargetX-48));
-    private final Pose blueScorePose = new Pose(43, 144-36, Math.toRadians(135));
+    private final Pose blueScorePose = new Pose(0, 0, Math.toRadians(0));
 
-    private final Pose blueStartPose1 = new Pose(21.5, 144-14.5, Math.toRadians(135));
-    private final Pose blueStartPose2 = new Pose(23, 126, Math.toRadians(135));
-    private final Pose blueInterPose = new Pose(48, 108, Math.toRadians(135));
-    private final Pose blueEndPose = new Pose(38, 144-24, Math.toRadians(180));
+    private final Pose blueStartPose1 = new Pose(0, 0, Math.toRadians(0));
+    private final Pose blueStartPose2 = new Pose(0, 0, Math.toRadians(0));
+    private final Pose blueInterPose = new Pose(0, 0, Math.toRadians(0));
+    private final Pose blueEndPose = new Pose(5, 0, Math.toRadians(0));
 
 
     /************** End of Highly Modifiable Variables **************/
 
 
-    private Pose startPose = new Pose(23, 0, Math.toRadians(135));
-    private Pose interPose = new Pose(48, -16, Math.toRadians(135));
+    private Pose startPose = new Pose(0, 0, Math.toRadians(180));
+    private Pose interPose = new Pose(5, 0, Math.toRadians(135));
     private Pose endPose = new Pose(58, 24, Math.toRadians(90));
     private Pose scorePose = new Pose(48, 108, Math.toRadians(135));
 
@@ -125,7 +123,7 @@ public class AutoTest extends OpMode {
             scorePose = redScorePose;
         }
 
-        scorePreload = new Path(new BezierLine(startPose, scorePose));
+       /* scorePreload = new Path(new BezierLine(startPose, scorePose));
         scorePreload.setLinearHeadingInterpolation(startPose.getHeading(), scorePose.getHeading());
 
         backUpToShoot = autoFollower.pathBuilder()
@@ -136,6 +134,8 @@ public class AutoTest extends OpMode {
                 .addPath(new BezierLine(interPose, endPose))
                 .setLinearHeadingInterpolation(interPose.getHeading(), endPose.getHeading())
                .build();
+
+        */
     }
 
     public void autonomousPathUpdate() {
@@ -157,7 +157,9 @@ public class AutoTest extends OpMode {
                 - Time: "if(pathTimer.getElapsedTimeSeconds() > 1) {}"
                 - Robot Position: "if(autoFollower.getPose().getX() > 36) {}"
                 */
-
+                setPathState(3);
+                break;
+                /*
                 if (!autoFollower.isBusy()) {
                     /* Score Preload */
 
@@ -169,6 +171,7 @@ public class AutoTest extends OpMode {
 
                     //autoFollower.followPath(grabPickup1,true);
                     //if 1st time through firing loop, set the action timer
+                    /*
                     switch (currentTriggerState) {
                         case readyToFire:
                             if (fireLoopCount==1 && actionTimer.getElapsedTimeSeconds()<=5){
@@ -199,9 +202,14 @@ public class AutoTest extends OpMode {
                                 }
                                 break;
 
+
+
                     }
                 }
+
+
                 break;
+                */
             case 3:
                 /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the pickup1Pose's position */
                 if (!autoFollower.isBusy()) {
@@ -294,7 +302,6 @@ public class AutoTest extends OpMode {
         public void init_loop () {
             telemetryData.addData("This will run in a roughly triangular shape, starting on the bottom-middle point.", getRuntime());
             telemetryData.addData("So, make sure you have enough space to the left, front, and right to run the OpMode.", getRuntime());
-            telemetryData.update();
             telemetryData.update();
             //autoFollower.update();
             //drawCurrent();

@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.archive;
 
 import static org.firstinspires.ftc.teamcode.pedroPathing.Constants.blue;
+import static org.firstinspires.ftc.teamcode.pedroPathing.Constants.driveConstants;
 import static org.firstinspires.ftc.teamcode.pedroPathing.Constants.red;
 
 import com.bylazar.configurables.annotations.IgnoreConfigurable;
@@ -17,6 +18,7 @@ import com.pedropathing.paths.PathChain;
 import com.pedropathing.util.PoseHistory;
 import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -24,7 +26,7 @@ import com.seattlesolvers.solverslib.util.TelemetryData;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 //import org.firstinspires.ftc.teamcode.pedroPathing.Drawing;
-
+@Disabled
 @Autonomous
 public class AutoTestBlue2Reload extends OpMode {
     /****************** Modify These Variables ************************/
@@ -33,7 +35,7 @@ public class AutoTestBlue2Reload extends OpMode {
     public double topFlywheelDesired = 0.75;
     public double bottomFlywheelDesired = 0.85;
     public int fireLoopCountMax = 3;
-    public double chassisSpeedMax = 0.1;
+    public double chassisSpeedMax = 20;
     public double timeToFireTrigger = 1.0;
     public double timeToResetTrigger = 2.5;
 
@@ -152,6 +154,8 @@ public class AutoTestBlue2Reload extends OpMode {
             case 0:
                 bottomFlywheel.setPower(bottomFlywheelDesired);
                 topFlywheel.setPower(topFlywheelDesired);
+                bottomFlywheel.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                topFlywheel.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
                 actionTimer.resetTimer();
                 setPathState(1);
                 break;
@@ -243,7 +247,7 @@ public class AutoTestBlue2Reload extends OpMode {
 
             // These loop the movements of the robot, these must be called continuously in order to work
 
-            //driveConstants.maxPower(chassisSpeedMax);
+            driveConstants.maxPower(chassisSpeedMax);
             autoBlueFollower.update();
             autonomousPathUpdate();
 
