@@ -43,7 +43,7 @@ public class Constants {
         public static final double cameraRoll = 0; //degrees Rotation about camera Z, Landscape is 0
     }
     public static FollowerConstants followerConstants = new FollowerConstants()
-            .mass(7.9)
+            .mass(8.8)
             .forwardZeroPowerAcceleration(-41.95)
             .lateralZeroPowerAcceleration(-81.9)
             .useSecondaryTranslationalPIDF(false)

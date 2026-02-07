@@ -1,19 +1,16 @@
-package org.firstinspires.ftc.teamcode.opmodes;
+package org.firstinspires.ftc.teamcode.archive;
 
 
 import static org.firstinspires.ftc.teamcode.pedroPathing.Constants.alliance;
+
 import static org.firstinspires.ftc.teamcode.pedroPathing.Constants.blue;
-import static org.firstinspires.ftc.teamcode.pedroPathing.Constants.cameraConstants.cameraPitch;
-import static org.firstinspires.ftc.teamcode.pedroPathing.Constants.cameraConstants.cameraRoll;
-import static org.firstinspires.ftc.teamcode.pedroPathing.Constants.cameraConstants.cameraX;
-import static org.firstinspires.ftc.teamcode.pedroPathing.Constants.cameraConstants.cameraY;
-import static org.firstinspires.ftc.teamcode.pedroPathing.Constants.cameraConstants.cameraYaw;
-import static org.firstinspires.ftc.teamcode.pedroPathing.Constants.cameraConstants.cameraZ;
+import static org.firstinspires.ftc.teamcode.pedroPathing.Constants.cameraConstants.*;
 import static org.firstinspires.ftc.teamcode.pedroPathing.Constants.driveConstants;
 import static org.firstinspires.ftc.teamcode.pedroPathing.Constants.red;
 
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -39,9 +36,9 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-//@Disabled
+@Disabled
 @TeleOp
-public class A_Tele extends CommandOpMode {
+public class A_Tele_Feb4 extends CommandOpMode {
     /*********
      * Modified Left Bumper on 2 to not strafe or distance, but to change flywheel speed
      */
@@ -82,7 +79,6 @@ public class A_Tele extends CommandOpMode {
 
     boolean runFlywheel = false;
     boolean runIntake = false;
-    boolean raiseTheBot = false;
     double intakeDesired = .75;
     double topFlywheelDesired = .65;
     double bottomFlywheelDesired = 0.85;
@@ -97,7 +93,6 @@ public class A_Tele extends CommandOpMode {
     double triggerValue = 0;
     double aimError = 0;
     double chassisSpeedRatio=0.75;
-    double degreesToRaise = 80;
 
     /*************************
      * Motor & Servo Variables
@@ -105,7 +100,6 @@ public class A_Tele extends CommandOpMode {
     private DcMotor intake;
     private DcMotor bottomFlywheel;
     private DcMotor topFlywheel;
-    private DcMotor raiseMotor;
     private Servo trigger;
     private Servo index1;
 
@@ -128,7 +122,6 @@ public class A_Tele extends CommandOpMode {
     mtzButtonBehavior flywheelOff = new mtzButtonBehavior();
     mtzButtonBehavior redAllianceButton = new mtzButtonBehavior();
     mtzButtonBehavior blueAllianceButton = new mtzButtonBehavior();
-    mtzButtonBehavior raiseButton = new mtzButtonBehavior();
     double chassisSpeedSlow;
     double chassisSpeedFast;
     double triggerFire = 0;
@@ -145,7 +138,6 @@ public class A_Tele extends CommandOpMode {
 
         teleFollower.startTeleopDrive();
 
-
         bottomFlywheel = hardwareMap.dcMotor.get("m5");
         topFlywheel = hardwareMap.dcMotor.get("m6");
         bottomFlywheel.setDirection(DcMotor.Direction.FORWARD);
@@ -154,11 +146,6 @@ public class A_Tele extends CommandOpMode {
         topFlywheel.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         intake = hardwareMap.dcMotor.get("m7");
         intake.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-
-
-        raiseMotor = hardwareMap.dcMotor.get("m8");
-        raiseMotor.setDirection(DcMotor.Direction.REVERSE);
-        raiseMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         //intake.setDirection(DcMotor.Direction.REVERSE);
 
         trigger = hardwareMap.servo.get("s12");
@@ -242,7 +229,6 @@ public class A_Tele extends CommandOpMode {
         rightBackDrive.setDirection(DcMotor.Direction.REVERSE);
 
 
-
         while (opModeIsActive())
         {
 
@@ -284,8 +270,6 @@ public class A_Tele extends CommandOpMode {
             flywheelOff.update(gamepad2.x);
             triggerFire = gamepad2.right_trigger;
             reverseIntake = gamepad2.left_trigger;
-
-            raiseButton.update(gamepad1.a);
 
             redAllianceButton.update(gamepad1.dpad_left);
             blueAllianceButton.update(gamepad1.dpad_right);
@@ -338,19 +322,6 @@ public class A_Tele extends CommandOpMode {
             }
 
 
-            if(raiseButton.isDown) {
-                raiseTheBot = true;}
-            if(gamepad1.yWasPressed()){
-                raiseTheBot = false;
-            }
-            if(raiseTheBot){
-                raiseMotor.setTargetPosition((int) (degreesToRaise*1993.6/360));
-                raiseMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                raiseMotor.setPower(1);
-            } else {
-                raiseMotor.setPower(0);
-                raiseMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            }
 
             if (redAllianceButton.clickedDown){
                 alliance=red;
@@ -513,9 +484,6 @@ public class A_Tele extends CommandOpMode {
             telemetryData.addData("Trigger Value", triggerValue);
             telemetryData.addData("Trigger Position", trigger.getPosition());
             telemetryData.addData("Aim Error", aimError);
-            telemetryData.addData("Raise Position ", raiseMotor.getCurrentPosition());
-            telemetryData.addData("Raise Button Down ", raiseButton.isDown);
-
             telemetry.update();
 
             //teleFollower.setTeleOpDrive(-gamepad1.left_stick_y*chassisSpeedRatio, -gamepad1.left_stick_x*chassisSpeedRatio, -gamepad1.right_stick_x*chassisSpeedRatio, false);

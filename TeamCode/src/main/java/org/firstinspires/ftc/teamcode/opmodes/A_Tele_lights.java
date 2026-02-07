@@ -14,6 +14,7 @@ import static org.firstinspires.ftc.teamcode.pedroPathing.Constants.red;
 
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
+import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -30,6 +31,9 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Position;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
+import org.firstinspires.ftc.teamcode.lights.Prism.Color;
+import org.firstinspires.ftc.teamcode.lights.Prism.GoBildaPrismDriver;
+import org.firstinspires.ftc.teamcode.lights.Prism.PrismAnimations;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.util.mtzButtonBehavior;
 import org.firstinspires.ftc.vision.VisionPortal;
@@ -41,7 +45,7 @@ import java.util.concurrent.TimeUnit;
 
 //@Disabled
 @TeleOp
-public class A_Tele extends CommandOpMode {
+public class A_Tele_lights extends CommandOpMode {
     /*********
      * Modified Left Bumper on 2 to not strafe or distance, but to change flywheel speed
      */
@@ -75,6 +79,14 @@ public class A_Tele extends CommandOpMode {
     private VisionPortal visionPortal;               // Used to manage the video source.
     private AprilTagProcessor aprilTag;              // Used for managing the AprilTag detection process.
     private AprilTagDetection desiredTag = null;     // Used to hold the data for a detected AprilTag
+
+
+    /*** Lights ***/
+    public static GoBildaPrismDriver prism;
+    public static PrismAnimations.Solid solidBlue = new PrismAnimations.Solid(Color.BLUE);
+    public static PrismAnimations.Solid solidRed = new PrismAnimations.Solid(Color.RED);
+    public static PrismAnimations.Blink blinkingLight = new PrismAnimations.Blink(Color.WHITE);
+    public static PrismAnimations.Solid solidWhite = new PrismAnimations.Solid(Color.WHITE);
 
 
     Follower teleFollower;
@@ -111,7 +123,8 @@ public class A_Tele extends CommandOpMode {
 
     //CRServo index1 = new CRServo(hardwareMap, "s6");
 
-
+    boolean resetLights = false;
+    private Timer opmodeTimer;
 
     InterpLUT triggerServoLUT = new InterpLUT();
 
@@ -146,6 +159,9 @@ public class A_Tele extends CommandOpMode {
         teleFollower.startTeleopDrive();
 
 
+        opmodeTimer = new Timer();
+        opmodeTimer.resetTimer();
+
         bottomFlywheel = hardwareMap.dcMotor.get("m5");
         topFlywheel = hardwareMap.dcMotor.get("m6");
         bottomFlywheel.setDirection(DcMotor.Direction.FORWARD);
@@ -167,6 +183,23 @@ public class A_Tele extends CommandOpMode {
 
         //index1.setZeroPowerBehavior(CRServo.ZeroPowerBehavior.FLOAT);
         index1 = hardwareMap.servo.get("s6");
+
+        /*** Lights ***/
+        prism = hardwareMap.get(GoBildaPrismDriver.class,"prism");
+        solidBlue.setBrightness(50);
+        solidBlue.setStartIndex(0);
+        solidBlue.setStopIndex(24);
+        solidRed.setBrightness(50);
+        solidRed.setStartIndex(0);
+        solidRed.setStopIndex(24);
+
+        if (alliance==red){
+            prism.insertAndUpdateAnimation(GoBildaPrismDriver.LayerHeight.LAYER_0, solidRed);
+        } else if (alliance==blue){
+            prism.insertAndUpdateAnimation(GoBildaPrismDriver.LayerHeight.LAYER_0, solidBlue);
+        }
+        resetLights = true;
+
 
         // Initialize the Apriltag Detection process
         initAprilTag();
@@ -241,6 +274,8 @@ public class A_Tele extends CommandOpMode {
         rightFrontDrive.setDirection(DcMotor.Direction.REVERSE);
         rightBackDrive.setDirection(DcMotor.Direction.REVERSE);
 
+
+        opmodeTimer.resetTimer();
 
 
         while (opModeIsActive())
@@ -354,19 +389,28 @@ public class A_Tele extends CommandOpMode {
 
             if (redAllianceButton.clickedDown){
                 alliance=red;
+                prism.insertAndUpdateAnimation(GoBildaPrismDriver.LayerHeight.LAYER_0, solidRed);
             }
             if (blueAllianceButton.clickedDown){
                 alliance=blue;
+                prism.insertAndUpdateAnimation(GoBildaPrismDriver.LayerHeight.LAYER_0, solidBlue);
             }
 
 
+            /*** Lights Timer ***/
+
+            if (opmodeTimer.getElapsedTimeSeconds() > 90 && resetLights) {
+                prism.insertAndUpdateAnimation(GoBildaPrismDriver.LayerHeight.LAYER_0, solidWhite);
+                resetLights=false;
+            }
 
 
             if (alliance==red){
                 DESIRED_TAG_ID = RED_TARGET_TAG_ID;
-            } else {
+            } else if (alliance==blue){
                 DESIRED_TAG_ID = BLUE_TARGET_TAG_ID;
             }
+
 
             /**
              * Set the intake roller to spin if the trigger servo is beyond the hold position on it's way to intake

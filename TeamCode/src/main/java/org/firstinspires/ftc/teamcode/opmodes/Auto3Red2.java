@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.opmodes;
 
+import static org.firstinspires.ftc.teamcode.opmodes.A_Tele_lights.prism;
+import static org.firstinspires.ftc.teamcode.opmodes.A_Tele_lights.solidRed;
 import static org.firstinspires.ftc.teamcode.pedroPathing.Constants.alliance;
 import static org.firstinspires.ftc.teamcode.pedroPathing.Constants.blue;
 import static org.firstinspires.ftc.teamcode.pedroPathing.Constants.driveConstants;
@@ -28,6 +30,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.seattlesolvers.solverslib.util.TelemetryData;
 
 import org.firstinspires.ftc.teamcode.archive.AutoTest_2;
+import org.firstinspires.ftc.teamcode.lights.Prism.GoBildaPrismDriver;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
 //import org.firstinspires.ftc.teamcode.pedroPathing.Drawing;
@@ -42,7 +45,7 @@ public class Auto3Red2 extends OpMode {
     public double chassisSpeedMax = 20;
     public double timeToFireTrigger = 0.33;
     public double timeToResetTrigger = 1.0;
-    public double timeToDelayStart = 20;
+    public double timeToDelayStart = 0;
     double triggerToIntake = 0.1;
     double triggerToHold = 0.45;
     double triggerToFire = 0.9;
@@ -72,7 +75,7 @@ public class Auto3Red2 extends OpMode {
     /************** End of Highly Modifiable Variables **************/
 
 
-    private Pose startPose = new Pose(148-48, 90, Math.toRadians(90));
+    private Pose startPose = new Pose(148-48, 9, Math.toRadians(90));
     private Pose interPose = new Pose(144-55, 14, Math.toRadians(90));
     private Pose endPose = new Pose(144-50, 20, Math.toRadians(0));
     private Pose loadPose = new Pose(144-9, 9, Math.toRadians(180));

@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.opmodes;
 
+import static org.firstinspires.ftc.teamcode.opmodes.A_Tele_lights.prism;
+import static org.firstinspires.ftc.teamcode.opmodes.A_Tele_lights.solidRed;
 import static org.firstinspires.ftc.teamcode.pedroPathing.Constants.alliance;
 import static org.firstinspires.ftc.teamcode.pedroPathing.Constants.blue;
 import static org.firstinspires.ftc.teamcode.pedroPathing.Constants.driveConstants;
@@ -28,12 +30,15 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.seattlesolvers.solverslib.util.TelemetryData;
 
 import org.firstinspires.ftc.teamcode.archive.AutoTest_2;
+import org.firstinspires.ftc.teamcode.lights.Prism.Color;
+import org.firstinspires.ftc.teamcode.lights.Prism.GoBildaPrismDriver;
+import org.firstinspires.ftc.teamcode.lights.Prism.PrismAnimations;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
 //import org.firstinspires.ftc.teamcode.pedroPathing.Drawing;
 //@Disabled
 @Autonomous
-public class Auto3Blue2 extends OpMode {
+public class Auto3Red2Lights extends OpMode {
     /****************** Modify These Variables ************************/
     public int startingPosition = 1;
     public double topFlywheelDesired = 0.8;
@@ -41,7 +46,7 @@ public class Auto3Blue2 extends OpMode {
     public int fireLoopCountMax = 4;
     public double chassisSpeedMax = 20;
     public double timeToFireTrigger = 0.33;
-    public double timeToResetTrigger = 1;
+    public double timeToResetTrigger = 1.0;
     public double timeToDelayStart = 0;
     double triggerToIntake = 0.1;
     double triggerToHold = 0.45;
@@ -54,9 +59,9 @@ public class Auto3Blue2 extends OpMode {
     private final Pose redScorePose = new Pose(144-50, 12, Math.toRadians(70));
     //private final Pose redStartPose1 = new Pose(144-21.5, 144-14.5, Math.toRadians(45));
     private final Pose redStartPose1 = new Pose(144-48, 9, Math.toRadians(90));
-    private final Pose redStartPose2 = new Pose(144-23, 126, Math.toRadians(0));
+    private final Pose redStartPose2 = new Pose(144-23, 126, Math.toRadians(45));
     private final Pose redInterPose = new Pose(144-55, 14, Math.toRadians(90));
-    private final Pose redEndPose = new Pose(144-50, 36, Math.toRadians(0));
+    private final Pose redEndPose = new Pose(144-50, 20, Math.toRadians(0));
     private final Pose redLoadPose = new Pose(144-9, 9, Math.toRadians(180));
 
     //private final Pose blueScorePose = new Pose(50, 16, Math.toRadians(135)); //Math.atan((blueTargetY-16)/(blueTargetX-50))
@@ -72,11 +77,11 @@ public class Auto3Blue2 extends OpMode {
     /************** End of Highly Modifiable Variables **************/
 
 
-    private Pose startPose = new Pose(48, 9, Math.toRadians(90));
-    private Pose interPose = new Pose(55, 14, Math.toRadians(135));
-    private Pose endPose = new Pose(50, 20, Math.toRadians(180));
-    private Pose loadPose = new Pose(9, 9, Math.toRadians(0));
-    private Pose scorePose = new Pose(50, 12, Math.toRadians(110));
+    private Pose startPose = new Pose(148-48, 9, Math.toRadians(90));
+    private Pose interPose = new Pose(144-55, 14, Math.toRadians(90));
+    private Pose endPose = new Pose(144-50, 20, Math.toRadians(0));
+    private Pose loadPose = new Pose(144-9, 9, Math.toRadians(180));
+    private Pose scorePose = new Pose(144-50, 12, Math.toRadians(70));
 
 
 
@@ -107,6 +112,10 @@ public class Auto3Blue2 extends OpMode {
     private Servo trigger;
     private int fireLoopCount = 1;
 
+    /*** Lights ***/
+    public static GoBildaPrismDriver prism;
+    public static PrismAnimations.Solid solidBlue = new PrismAnimations.Solid(Color.BLUE);
+    public static PrismAnimations.Solid solidRed = new PrismAnimations.Solid(Color.RED);
 
     private Path scorePreload;
     private PathChain backUpToShoot, goPark, launchToReload, reloadToLaunch;
@@ -114,7 +123,7 @@ public class Auto3Blue2 extends OpMode {
     public void buildPaths() {
         /* This is our scorePreload path. We are using a BezierLine, which is a straight line. */
 
-        alliance = blue;
+        alliance=red;
         if (alliance == blue) {
             if (startingPosition == 2) {
                 startPose = blueStartPose2;
@@ -140,14 +149,13 @@ public class Auto3Blue2 extends OpMode {
 
         scorePreload = new Path(new BezierLine(startPose, scorePose));
         scorePreload.setLinearHeadingInterpolation(startPose.getHeading(), scorePose.getHeading());
-
-        /*
+/*
         backUpToShoot = follower.pathBuilder()
                 .addPath(new BezierLine(startPose, interPose))
                 .setLinearHeadingInterpolation(startPose.getHeading(), interPose.getHeading())
                 .build();
 
-         */
+ */
         launchToReload = follower.pathBuilder()
                 .addPath(new BezierLine(scorePose, loadPose))
                 .setLinearHeadingInterpolation(scorePose.getHeading(), loadPose.getHeading())
@@ -165,6 +173,7 @@ public class Auto3Blue2 extends OpMode {
     public void autonomousPathUpdate() {
         switch (pathState) {
             case 0:
+                prism.insertAndUpdateAnimation(GoBildaPrismDriver.LayerHeight.LAYER_0, solidRed);
                 if (opmodeTimer.getElapsedTimeSeconds() < timeToDelayStart) {
                     break;
                 }
@@ -240,6 +249,7 @@ public class Auto3Blue2 extends OpMode {
 
                     /* Since this is a pathChain, we can have Pedro hold the end point while we are scoring the sample */
                     follower.followPath(goPark, true);
+                    prism.insertAndUpdateAnimation(GoBildaPrismDriver.LayerHeight.LAYER_0, solidRed);
                     setPathState(4);
                 }
                 break;
