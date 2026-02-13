@@ -42,7 +42,7 @@ public class Auto3Blue2Close extends OpMode {
     public double chassisSpeedMax = 20;
     public double timeToFireTrigger = 0.1;
     public double timeToResetTrigger = 1;
-    public double timeToDelayStart = 20;
+    public double timeToDelayStart = 22;
     double triggerToIntake = 0.1;
     double triggerToHold = 0.45;
     double triggerToFire = 0.9;

@@ -35,10 +35,10 @@ public class Constants {
          * Robot axes: Origin location: Center of the robot at field height; Axes orientation: +x right, +y forward, +z upward
          */
 
-        public static final double cameraX = -25; //mm Right
-        public static final double cameraY = 200; //mm Forward
-        public static final double cameraZ = 30; //mm Up
-        public static final double cameraYaw = 8; //degrees Forward 0, Left 90, Right -90
+        public static final double cameraX = -16; //mm Right
+        public static final double cameraY = 16; //mm Forward
+        public static final double cameraZ = 200; //mm Up
+        public static final double cameraYaw = 0; //degrees Forward 0, Left 90, Right -90
         public static final double cameraPitch = -80; //degrees Rotation about X 0 is straight up, forward is -90
         public static final double cameraRoll = 0; //degrees Rotation about camera Z, Landscape is 0
     }

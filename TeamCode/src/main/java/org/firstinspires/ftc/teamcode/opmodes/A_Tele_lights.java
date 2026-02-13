@@ -49,9 +49,9 @@ public class A_Tele_lights extends CommandOpMode {
     /*********
      * Modified Left Bumper on 2 to not strafe or distance, but to change flywheel speed
      */
-    public final double[] DISTANCE_CAL =        {   0, 55,  70,  75, 116,  140, 205 };
-    public final double[] TOP_FLYWHEEL_CAL =    { .50,.50, .55, .65, .80, .875, .90 };
-    public final double[] BOTTOM_FLYWHEEL_CAL = { .75,.75, .85, .85, .85,  .85, .85 };
+    public final double[] DISTANCE_CAL =        {   0, 60,  70,  85, 116,  140, 205 };
+    public final double[] TOP_FLYWHEEL_CAL =    { .50,.50, .55, .60, .80, .875, .90 };
+    public final double[] BOTTOM_FLYWHEEL_CAL = { .85,.85, .85, .85, .85,  .85, .85 };
     InterpLUT topFlywheelLUT;
     InterpLUT bottomFlywheelLUT;
     final double DESIRED_DISTANCE = 66.0; //  this is how close the camera should get to the target (inches)
@@ -96,7 +96,7 @@ public class A_Tele_lights extends CommandOpMode {
     boolean runIntake = false;
     boolean raiseTheBot = false;
     double intakeDesired = .75;
-    double topFlywheelDesired = .65;
+    double topFlywheelDesired = .80;
     double bottomFlywheelDesired = 0.85;
     double triggerToIntake = 0.1;
     double triggerToHold = 0.45;
@@ -109,7 +109,7 @@ public class A_Tele_lights extends CommandOpMode {
     double triggerValue = 0;
     double aimError = 0;
     double chassisSpeedRatio=0.75;
-    double degreesToRaise = 80;
+    double degreesToRaise = 70;
 
     /*************************
      * Motor & Servo Variables

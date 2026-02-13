@@ -45,7 +45,7 @@ public class Auto3Red2 extends OpMode {
     public double chassisSpeedMax = 20;
     public double timeToFireTrigger = 0.33;
     public double timeToResetTrigger = 1.0;
-    public double timeToDelayStart = 0;
+    public double timeToDelayStart = 20;
     double triggerToIntake = 0.1;
     double triggerToHold = 0.45;
     double triggerToFire = 0.9;
